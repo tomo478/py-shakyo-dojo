@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PY写経道場 — 打って覚えるPython</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script>
+/* Skulpt本体をCDNから読み込む(第1候補がダメなら第2候補へ) */
+function __loadScript(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src=src;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+window.__skReady=(async()=>{
+  const sources=[
+    ["https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js",
+     "https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"],
+    ["https://cdn.jsdelivr.net/gh/Tezumie/Skulpt-CDN@latest/skulpt.min.js",
+     "https://cdn.jsdelivr.net/gh/Tezumie/Skulpt-CDN@latest/skulpt-stdlib.js"]
+  ];
+  for(const [core,stdlib] of sources){
+    try{
+      await __loadScript(core);
+      await __loadScript(stdlib);
+      if(typeof Sk!=="undefined") return true;
+    }catch(e){/* 次の候補へ */}
+  }
+  return false;
+})();
+</script>
+<style>
+:root{
+  --bg:#0d0d1f;
+  --bg2:#14142b;
+  --panel:#1b1b38;
+  --panel2:#222247;
+  --line:#33336b;
+  --text:#eef0ff;
+  --dim:#8a8fc4;
+  --yellow:#ffd93d;
+  --cyan:#4dd8ff;
+  --pink:#ff6bcb;
+  --green:#7dff9a;
+  --red:#ff5d6c;
+  --orange:#ffab4d;
+  --px:'DotGothic16',monospace;
+  --mono:'IBM Plex Mono',monospace;
+  --jp:'M PLUS Rounded 1c',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--jp);
+  color:var(--text);
+  background:
+    radial-gradient(900px 500px at 80% -10%, rgba(255,107,203,.10), transparent 55%),
+    radial-gradient(800px 500px at 5% 110%, rgba(77,216,255,.10), transparent 55%),
+    var(--bg);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+/* うっすらグリッド + スキャンライン */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:36px 36px;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 1px, transparent 1px 3px);
+  opacity:.5;
+}
+/* ============ header ============ */
+header{
+  position:relative;z-index:10;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 18px;
+  background:rgba(13,13,31,.9);
+  border-bottom:2px solid var(--line);
+}
+.logo{
+  font-family:var(--px);font-size:22px;color:var(--yellow);
+  text-shadow:3px 3px 0 rgba(255,107,203,.45);
+  display:flex;align-items:center;gap:10px;user-select:none;letter-spacing:1px;
+}
+.logo .coin{
+  display:inline-grid;place-items:center;
+  width:30px;height:30px;border-radius:6px;
+  background:var(--yellow);color:#1b1500;font-size:15px;
+  box-shadow:0 3px 0 #b8951a, 0 0 16px rgba(255,217,61,.4);
+}
+.belt-area{display:flex;align-items:center;gap:10px}
+.belt{
+  font-family:var(--px);font-size:14px;
+  padding:4px 12px;border-radius:6px;
+  background:var(--panel2);border:2px solid var(--line);
+  display:flex;align-items:center;gap:8px;
+}
+.belt .belt-color{width:26px;height:10px;border-radius:2px;box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.exp-track{width:110px;height:8px;border-radius:4px;background:var(--panel);border:1px solid var(--line);overflow:hidden}
+.exp-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .5s}
+.exp-label{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.hd-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.status{font-family:var(--mono);font-size:12px;display:flex;align-items:center;gap:7px;color:var(--dim)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--red);transition:.3s}
+.dot.ready{background:var(--green);box-shadow:0 0 10px rgba(125,255,154,.7)}
+.dot.loading{background:var(--yellow);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.icon-btn{
+  font-size:17px;background:var(--panel);border:2px solid var(--line);
+  border-radius:8px;width:36px;height:36px;cursor:pointer;color:var(--text);
+  transition:.15s;
+}
+.icon-btn:hover{border-color:var(--cyan)}
+/* ============ layout ============ */
+.main{flex:1;display:flex;min-height:0;position:relative;z-index:1}
+nav{
+  width:250px;min-width:250px;overflow-y:auto;
+  padding:14px 10px 40px;
+  background:rgba(20,20,43,.7);
+  border-right:2px solid var(--line);
+}
+nav h2{
+  font-family:var(--px);font-size:13px;color:var(--cyan);
+  letter-spacing:2px;padding:4px 10px 12px;
+}
+.lesson-btn{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:10px 10px;margin-bottom:6px;
+  background:var(--panel);border:2px solid transparent;border-radius:10px;
+  color:var(--dim);font-family:var(--jp);font-weight:700;font-size:13px;
+  cursor:pointer;text-align:left;transition:.15s;
+}
+.lesson-btn:hover{border-color:var(--line);color:var(--text);transform:translateX(3px)}
+.lesson-btn.active{
+  background:var(--panel2);color:var(--text);border-color:var(--cyan);
+  box-shadow:0 0 12px rgba(77,216,255,.25);
+}
+.lesson-btn .num{
+  font-family:var(--px);font-size:12px;min-width:24px;height:24px;
+  border-radius:6px;display:grid;place-items:center;
+  background:var(--bg2);color:var(--dim);border:1px solid var(--line);
+}
+.lesson-btn.active .num{background:var(--cyan);color:#00222e;border-color:var(--cyan)}
+.rank-mini{
+  margin-left:auto;font-family:var(--px);font-size:15px;min-width:20px;text-align:center;
+}
+.rank-S{color:var(--yellow);text-shadow:0 0 8px rgba(255,217,61,.8)}
+.rank-A{color:var(--cyan)}
+.rank-B{color:var(--green)}
+.rank-C{color:var(--dim)}
+/* ============ stage ============ */
+.stage{
+  flex:1;min-width:0;overflow-y:auto;
+  padding:22px 26px 120px;
+  display:flex;flex-direction:column;gap:14px;align-items:center;
+}
+.lesson-head{width:100%;max-width:860px}
+.lesson-head .tag{
+  font-family:var(--px);font-size:12px;color:var(--pink);
+  letter-spacing:2px;margin-bottom:4px;
+}
+.lesson-head h1{
+  font-family:var(--px);font-size:24px;color:var(--text);
+  text-shadow:2px 2px 0 rgba(77,216,255,.35);margin-bottom:6px;
+}
+.lesson-head p{font-size:13.5px;color:var(--dim);line-height:1.8}
+.lesson-head code{
+  font-family:var(--mono);font-size:.92em;color:var(--yellow);
+  background:var(--panel);padding:1px 6px;border-radius:5px;border:1px solid var(--line);
+}
+/* HUD */
+.hud{
+  width:100%;max-width:860px;
+  display:flex;gap:12px;align-items:stretch;
+}
+.hud .box{
+  flex:1;background:var(--panel);border:2px solid var(--line);border-radius:12px;
+  padding:8px 14px;text-align:center;
+}
+.hud .label{font-family:var(--px);font-size:10px;color:var(--dim);letter-spacing:2px}
+.hud .val{font-family:var(--px);font-size:24px;line-height:1.2}
+.hud .combo-box{border-color:var(--yellow)}
+.hud .combo-val{color:var(--yellow)}
+.hud .combo-val.pop{animation:comboPop .18s}
+@keyframes comboPop{50%{transform:scale(1.35)}}
+.hud .miss-val{color:var(--red)}
+.hud .time-val{color:var(--cyan)}
+.hud .acc-val{color:var(--green)}
+/* typing card */
+.type-card{
+  width:100%;max-width:860px;position:relative;
+  background:var(--panel);
+  border:3px solid var(--line);border-radius:16px;
+  box-shadow:0 8px 0 rgba(0,0,0,.35), 0 0 40px rgba(77,216,255,.07);
+  overflow:hidden;
+  cursor:text;
+}
+.type-card.shake{animation:shake .25s}
+@keyframes shake{
+  20%{transform:translateX(-6px)}40%{transform:translateX(5px)}
+  60%{transform:translateX(-4px)}80%{transform:translateX(3px)}
+}
+.type-card .bar{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;background:var(--bg2);
+  border-bottom:2px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--dim);
+}
+.type-card .bar .lights{display:flex;gap:6px}
+.lights i{width:10px;height:10px;border-radius:50%;display:block}
+.lights i:nth-child(1){background:var(--pink)}
+.lights i:nth-child(2){background:var(--yellow)}
+.lights i:nth-child(3){background:var(--green)}
+.bar .fname{color:var(--cyan)}
+.bar .focus-hint{margin-left:auto;font-size:11px;color:var(--dim)}
+.code-area{
+  padding:24px 28px;
+  font-family:var(--mono);font-size:19px;line-height:2.05;
+  letter-spacing:.5px;
+  white-space:pre;overflow-x:auto;
+  min-height:120px;
+}
+.ch{border-radius:3px;transition:color .05s}
+.ch.pend{color:#4c4f8a}
+.ch.done{color:var(--text)}
+.ch.done.kw{color:var(--pink)}
+.ch.done.st{color:var(--green)}
+.ch.done.nm{color:var(--orange)}
+.ch.cur{
+  background:var(--yellow);color:#1b1500 !important;
+  animation:blink 1s steps(2) infinite;
+  box-shadow:0 0 10px rgba(255,217,61,.55);
+}
+@keyframes blink{50%{background:rgba(255,217,61,.35)}}
+.ch.missflash{background:var(--red);color:#fff !important;animation:none}
+.ch.sp.pend{color:#35386b}
+.ch.nl{font-size:14px;opacity:.85}
+/* progress line under code */
+.type-progress{height:6px;background:var(--bg2)}
+.type-progress i{
+  display:block;height:100%;width:0;
+  background:linear-gradient(90deg,var(--cyan),var(--pink));
+  transition:width .12s;
+}
+/* result overlay */
+.type-card.finished{min-height:560px}
+.result{
+  position:absolute;inset:0;z-index:5;
+  background:rgba(13,13,31,.95);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;padding:24px 20px;text-align:center;
+  overflow-y:auto;
+}
+.result.show{display:flex;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}}
+.clear-dots{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--px);font-size:13px;color:var(--dim);
+}
+.clear-dots .d{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--panel2);border:2px solid var(--line);
+}
+.clear-dots .d.on{
+  background:var(--yellow);border-color:var(--yellow);
+  box-shadow:0 0 10px rgba(255,217,61,.6);
+}
+.lesson-btn.locked{opacity:.45;cursor:not-allowed}
+.lesson-btn.locked:hover{transform:none;border-color:transparent;color:var(--dim)}
+.lesson-btn .lock{margin-left:auto;font-size:13px}
+.rank-stamp{
+  font-family:var(--px);font-size:88px;line-height:1;
+  transform:rotate(-8deg);
+  animation:stamp .45s cubic-bezier(.2,2.2,.4,1);
+}
+@keyframes stamp{from{transform:rotate(-8deg) scale(2.6);opacity:0}}
+.result .r-msg{font-family:var(--px);font-size:18px}
+.result .r-stats{
+  display:flex;gap:18px;font-family:var(--mono);font-size:13px;color:var(--dim);
+}
+.result .r-stats b{color:var(--text)}
+.result .out-box{
+  width:100%;max-width:520px;text-align:left;
+  background:#000018;border:2px solid var(--line);border-radius:10px;
+  padding:10px 14px;font-family:var(--mono);font-size:13.5px;line-height:1.7;
+  color:var(--green);max-height:150px;overflow-y:auto;white-space:pre-wrap;
+}
+.out-box .out-title{color:var(--dim);font-size:11px;letter-spacing:1px;margin-bottom:4px}
+.result .btns{display:flex;gap:12px;margin-top:4px}
+button.game-btn{
+  font-family:var(--px);font-size:15px;letter-spacing:1px;
+  padding:10px 22px;border-radius:10px;cursor:pointer;
+  border:none;color:#1b1500;background:var(--yellow);
+  box-shadow:0 4px 0 #b8951a;
+  transition:.1s;
+}
+button.game-btn:hover{filter:brightness(1.08)}
+button.game-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b8951a}
+button.game-btn.sub{background:var(--panel2);color:var(--text);box-shadow:0 4px 0 #10102a;border:2px solid var(--line)}
+button.game-btn.danger{
+  background:var(--red);color:#fff;box-shadow:0 4px 0 #a03040;
+}
+button.game-btn.danger:active{box-shadow:0 1px 0 #a03040}
+/* ============ リセット確認ダイアログ ============ */
+.confirm-modal{
+  position:fixed;inset:0;z-index:95;
+  background:rgba(9,9,22,.88);backdrop-filter:blur(3px);
+  display:none;place-items:center;padding:20px;
+}
+.confirm-modal.show{display:grid;animation:fadeIn .2s}
+.confirm-panel{
+  width:100%;max-width:440px;text-align:center;
+  background:var(--panel);
+  border:3px solid var(--red);border-radius:18px;
+  box-shadow:0 10px 0 rgba(0,0,0,.4), 0 0 50px rgba(255,93,108,.25);
+  padding:26px 28px 24px;
+  animation:introPop .3s cubic-bezier(.2,1.8,.4,1);
+}
+.confirm-panel .c-icon{font-size:44px;margin-bottom:8px}
+.confirm-panel h3{
+  font-family:var(--px);font-size:20px;color:var(--red);margin-bottom:12px;
+  text-shadow:2px 2px 0 rgba(0,0,0,.4);
+}
+.confirm-panel p{font-size:13.5px;line-height:1.9;color:#d5d9ff;margin-bottom:8px}
+.confirm-panel .c-list{
+  font-size:12.5px;color:var(--dim);line-height:1.9;
+  background:var(--bg2);border:1px solid var(--line);border-radius:10px;
+  padding:8px 14px;margin-bottom:16px;
+}
+.confirm-panel .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+/* cat sensei */
+.cat{
+  position:fixed;right:22px;bottom:18px;z-index:40;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  user-select:none;pointer-events:none;
+}
+.cat .bubble{
+  max-width:220px;background:var(--text);color:#1b1b38;
+  font-size:12.5px;font-weight:800;line-height:1.5;
+  padding:8px 12px;border-radius:12px;border-bottom-right-radius:2px;
+  opacity:0;transform:translateY(6px);transition:.25s;
+  box-shadow:0 4px 0 rgba(0,0,0,.35);
+}
+.cat .bubble.show{opacity:1;transform:none}
+.cat .face{
+  font-size:42px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35));
+  transition:transform .2s;
+}
+.cat .face.jump{animation:catjump .4s}
+@keyframes catjump{30%{transform:translateY(-14px) rotate(-8deg)}60%{transform:translateY(0)}}
+.cat .name{font-family:var(--px);font-size:10px;color:var(--dim)}
+/* sparks */
+.spark{position:fixed;pointer-events:none;font-size:22px;z-index:60;animation:fall 1.1s ease-in forwards}
+@keyframes fall{to{transform:translateY(140px) rotate(220deg);opacity:0}}
+/* loader */
+#loader{
+  position:fixed;inset:0;z-index:100;background:var(--bg);
+  display:grid;place-items:center;transition:opacity .5s;
+}
+#loader.hide{opacity:0;pointer-events:none}
+.loader-inner{text-align:center}
+.loader-inner .big{
+  font-family:var(--px);font-size:42px;color:var(--yellow);
+  text-shadow:4px 4px 0 rgba(255,107,203,.5);margin-bottom:10px;
+}
+.loader-inner .msg{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.loader-bar{width:220px;height:6px;background:var(--panel);border:1px solid var(--line);border-radius:3px;margin:16px auto 0;overflow:hidden}
+.loader-bar i{display:block;height:100%;width:40%;background:var(--yellow);animation:slide 1s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+/* ============ タイトル画面 ============ */
+#titleScreen{
+  position:fixed;inset:0;z-index:90;
+  background:
+    radial-gradient(700px 400px at 50% 20%, rgba(255,217,61,.08), transparent 60%),
+    radial-gradient(900px 500px at 80% 90%, rgba(255,107,203,.10), transparent 55%),
+    var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:22px;padding:24px;text-align:center;
+  transition:opacity .45s;
+  overflow-y:auto;
+}
+#titleScreen.hide{opacity:0;pointer-events:none}
+.title-logo{
+  font-family:var(--px);font-size:clamp(38px,8vw,66px);line-height:1.2;
+  color:var(--yellow);
+  text-shadow:4px 4px 0 rgba(255,107,203,.55), 0 0 40px rgba(255,217,61,.35);
+  animation:floaty 3s ease-in-out infinite;
+}
+@keyframes floaty{50%{transform:translateY(-8px)}}
+.title-sub{
+  font-family:var(--px);font-size:14px;color:var(--cyan);letter-spacing:3px;
+}
+.title-cat{font-size:56px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.4));animation:floaty 3s .4s ease-in-out infinite}
+.title-steps{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:720px;
+}
+.t-step{
+  flex:1;min-width:170px;max-width:220px;
+  background:var(--panel);border:2px solid var(--line);border-radius:14px;
+  padding:14px 14px 12px;
+}
+.t-step .t-num{
+  font-family:var(--px);font-size:12px;color:var(--pink);margin-bottom:6px;letter-spacing:2px;
+}
+.t-step .t-icon{font-size:26px;margin-bottom:6px}
+.t-step .t-txt{font-size:12.5px;font-weight:700;color:#d5d9ff;line-height:1.7}
+.title-start-btn{
+  font-family:var(--px);font-size:20px;letter-spacing:2px;
+  padding:16px 44px;border-radius:14px;cursor:pointer;border:none;
+  color:#1b1500;background:var(--yellow);
+  box-shadow:0 6px 0 #b8951a, 0 0 30px rgba(255,217,61,.35);
+  transition:.1s;
+  animation:pressBlink 1.4s steps(2) infinite;
+}
+@keyframes pressBlink{50%{box-shadow:0 6px 0 #b8951a, 0 0 50px rgba(255,217,61,.65)}}
+.title-start-btn:hover{filter:brightness(1.1);animation:none}
+.title-start-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b8951a}
+.title-continue{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.title-continue b{color:var(--green)}
+.title-reset{
+  font-size:11px;color:var(--dim);background:none;border:none;
+  text-decoration:underline;cursor:pointer;font-family:var(--jp);
+}
+.title-reset:hover{color:var(--red)}
+.intro-modal{
+  position:fixed;inset:0;z-index:70;
+  background:rgba(9,9,22,.88);backdrop-filter:blur(3px);
+  display:none;place-items:center;padding:20px;
+}
+.intro-modal.show{display:grid;animation:fadeIn .25s}
+.intro-panel{
+  width:100%;max-width:640px;max-height:88vh;overflow-y:auto;
+  background:var(--panel);
+  border:3px solid var(--cyan);border-radius:18px;
+  box-shadow:0 10px 0 rgba(0,0,0,.4), 0 0 50px rgba(77,216,255,.2);
+  padding:26px 30px 24px;
+  animation:introPop .35s cubic-bezier(.2,1.8,.4,1);
+}
+@keyframes introPop{from{transform:scale(.88) translateY(20px);opacity:0}}
+.intro-panel .i-tag{
+  font-family:var(--px);font-size:12px;color:var(--pink);letter-spacing:2px;margin-bottom:4px;
+}
+.intro-panel h2{
+  font-family:var(--px);font-size:24px;margin-bottom:14px;
+  color:var(--yellow);text-shadow:2px 2px 0 rgba(255,107,203,.4);
+}
+.intro-panel p{font-size:14px;line-height:1.9;color:#d5d9ff;margin-bottom:12px}
+.intro-panel code{
+  font-family:var(--mono);font-size:.92em;color:var(--yellow);
+  background:var(--bg2);padding:1px 6px;border-radius:5px;border:1px solid var(--line);
+}
+.intro-panel pre{
+  font-family:var(--mono);font-size:13.5px;line-height:1.8;
+  background:#000018;border:2px solid var(--line);border-radius:10px;
+  padding:12px 16px;margin:0 0 14px;overflow-x:auto;color:#cfe3ff;
+}
+.intro-panel pre b{color:var(--cyan);font-weight:600}
+.intro-panel .points{
+  list-style:none;margin:0 0 16px;
+  background:rgba(255,217,61,.06);border:1px dashed rgba(255,217,61,.5);
+  border-radius:10px;padding:10px 14px;
+}
+.intro-panel .points li{
+  font-size:13px;line-height:1.8;color:#e8e2c8;
+  padding-left:1.4em;text-indent:-1.4em;
+}
+.intro-panel .points li::before{content:"⭐ "}
+.intro-panel .i-sec{
+  font-family:var(--px);font-size:12px;color:var(--cyan);
+  letter-spacing:2px;margin:16px 0 8px;
+  display:flex;align-items:center;gap:8px;
+}
+.intro-panel .i-sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.intro-panel .flow{list-style:none;margin:0 0 14px;display:flex;flex-direction:column;gap:6px}
+.intro-panel .flow li{
+  background:var(--bg2);border:1px solid var(--line);border-radius:8px;
+  padding:8px 12px;font-size:12.5px;line-height:1.75;color:#d5d9ff;
+  display:flex;gap:10px;align-items:flex-start;text-align:left;
+}
+.intro-panel .flow .fn{
+  font-family:var(--px);font-size:12px;color:var(--yellow);
+  min-width:20px;padding-top:2px;
+}
+.intro-panel .flow .res{color:var(--green);font-family:var(--mono);font-size:.95em}
+.intro-panel .flow b{color:var(--orange)}
+.intro-start{
+  display:flex;justify-content:center;gap:10px;margin-top:6px;
+}
+.intro-hint{
+  text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px;
+}
+.mini-btn{
+  font-family:var(--jp);font-weight:800;font-size:11.5px;
+  background:var(--panel2);color:var(--cyan);
+  border:1px solid var(--line);border-radius:6px;
+  padding:3px 10px;cursor:pointer;transition:.15s;
+}
+.mini-btn:hover{border-color:var(--cyan)}
+#hiddenInput{
+  position:fixed;opacity:0;pointer-events:none;left:-999px;top:0;
+}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+@media (max-width:820px){
+  nav{position:absolute;left:-260px}
+  .code-area{font-size:16px;padding:18px}
+  .rank-stamp{font-size:64px}
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-inner">
+    <div class="big">PY写経道場</div>
+    <div class="msg" id="loaderMsg">Python 実行環境を読み込み中…</div>
+    <div class="loader-bar"><i></i></div>
+  </div>
+</div>
+
+<div id="titleScreen">
+  <div class="title-cat">🐱</div>
+  <div class="title-logo">PY写経道場</div>
+  <div class="title-sub">— 打って覚える Python —</div>
+  <div class="title-steps">
+    <div class="t-step">
+      <div class="t-num">STEP 1</div>
+      <div class="t-icon">📖</div>
+      <div class="t-txt">章のはじめに<br>文法の解説を読む</div>
+    </div>
+    <div class="t-step">
+      <div class="t-num">STEP 2</div>
+      <div class="t-icon">⌨️</div>
+      <div class="t-txt">お手本を見ながら<br>そのまま打ち込む(写経)</div>
+    </div>
+    <div class="t-step">
+      <div class="t-num">STEP 3</div>
+      <div class="t-icon">🏆</div>
+      <div class="t-txt">3回クリアで次の章へ!<br>打ったコードは本当に動く</div>
+    </div>
+  </div>
+  <button class="title-start-btn" id="titleStartBtn">▶ スタート!</button>
+  <div class="title-continue" id="titleContinue"></div>
+  <button class="title-reset" id="titleResetBtn" style="display:none">記録をリセットしてはじめから</button>
+</div>
+
+<header>
+  <div class="logo"><span class="coin">¥</span>PY写経道場</div>
+  <div class="belt-area">
+    <div class="belt"><span class="belt-color" id="beltColor"></span><span id="beltName">見習い</span></div>
+    <div>
+      <div class="exp-track"><div class="exp-fill" id="expFill"></div></div>
+      <div class="exp-label" id="expLabel">EXP 0</div>
+    </div>
+  </div>
+  <div class="hd-right">
+    <button class="icon-btn" id="headerResetBtn" title="進捗をリセット">↺</button>
+    <button class="icon-btn" id="soundBtn" title="効果音 ON/OFF">🔊</button>
+    <div class="status"><span class="dot loading" id="statusDot"></span><span id="statusText">loading…</span></div>
+  </div>
+</header>
+
+<div class="main">
+  <nav id="nav"><h2>▼ お手本リスト</h2></nav>
+
+  <div class="stage">
+    <div class="lesson-head" id="lessonHead"></div>
+
+    <div class="hud">
+      <div class="box combo-box"><div class="label">COMBO</div><div class="val combo-val" id="comboVal">0</div></div>
+      <div class="box"><div class="label">MISS</div><div class="val miss-val" id="missVal">0</div></div>
+      <div class="box"><div class="label">TIME</div><div class="val time-val" id="timeVal">0.0</div></div>
+      <div class="box"><div class="label">正確率</div><div class="val acc-val" id="accVal">100%</div></div>
+    </div>
+
+    <div class="type-card" id="typeCard">
+      <div class="bar">
+        <div class="lights"><i></i><i></i><i></i></div>
+        <span class="fname" id="fname">lesson.py</span>
+        <button class="mini-btn" id="guideBtn">📖 解説</button>
+        <span class="focus-hint" id="focusHint">キーを打つと開始!(半角英数モードで)</span>
+      </div>
+      <div class="code-area" id="codeArea"></div>
+      <div class="type-progress"><i id="typeProg"></i></div>
+
+      <div class="result" id="result">
+        <div class="rank-stamp" id="rankStamp">S</div>
+        <div class="r-msg" id="rankMsg"></div>
+        <div class="r-stats" id="rStats"></div>
+        <div class="clear-dots" id="clearDots"></div>
+        <div class="out-box"><div class="out-title">▶ このコードを実行した結果:</div><div id="runOut">…</div></div>
+        <div class="btns">
+          <button class="game-btn sub" id="retryBtn">もう一回打つ</button>
+          <button class="game-btn" id="nextBtn">次の章へ →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-panel">
+    <div class="c-icon">🙀</div>
+    <h3>本当にリセットするにゃ…?</h3>
+    <p>これまでの修行の記録が<strong>すべて消えて</strong>、まっさらな状態からやり直しになります。</p>
+    <div class="c-list">
+      消えるもの: EXP / 帯(段位) / 各章のクリア回数 /<br>
+      ベストランク / 章の解放状況
+    </div>
+    <div class="btns">
+      <button class="game-btn sub" id="confirmNoBtn">やっぱりやめる</button>
+      <button class="game-btn danger" id="confirmYesBtn">リセットする</button>
+    </div>
+  </div>
+</div>
+
+<div class="intro-modal" id="introModal">
+  <div class="intro-panel">
+    <div class="i-tag" id="iTag"></div>
+    <h2 id="iTitle"></h2>
+    <div id="iBody"></div>
+    <div class="intro-start">
+      <button class="game-btn" id="introStartBtn">写経スタート!</button>
+    </div>
+    <div class="intro-hint">Enterキーでもスタートできます</div>
+  </div>
+</div>
+
+<div class="cat">
+  <div class="bubble" id="catBubble">写経は 上達への近道だにゃ</div>
+  <div class="face" id="catFace">😺</div>
+  <div class="name">ニャン師匠</div>
+</div>
+
+<input id="hiddenInput" autocomplete="off" autocapitalize="off" spellcheck="false">
+
+<script>
+/* ============================================================
+   お手本データ(すべて半角文字 = IMEオフでそのまま打てる)
+============================================================ */
+const LESSONS=[
+{title:"print で表示",file:"01_print",
+ desc:'まずは基本の <code>print()</code>。カッコと引用符 <code>"</code> の位置を指に覚えさせよう。',
+ codes:[
+`print("Hello, Python!")
+print("Let's start!")`,
+`print("Good morning!")
+print("Time to code!")`,
+`print("Konnichiwa!")
+print("Python is fun!")`]},
+
+{title:"変数に入れる",file:"02_variable",
+ desc:'<code>=</code> は「代入」。値に名前をつけて、何度でも使い回せる。<code>+</code> で文字列をつなぐ形も頻出。',
+ codes:[
+`name = "Tomo"
+print(name)
+print("Hi, " + name)`,
+`hero = "Luna"
+print(hero)
+print("Go, " + hero + "!")`,
+`city = "Osaka"
+print(city)
+print("I love " + city)`]},
+
+{title:"計算させる",file:"03_calc",
+ desc:'数値は引用符なしで書く。<code>*</code> が掛け算。変数どうしの計算はプログラミングの基本形。',
+ codes:[
+`price = 150
+count = 7
+print(price * count)`,
+`apples = 12
+box = 6
+print(apples * box)`,
+`speed = 60
+hours = 3
+print(speed * hours)`]},
+
+{title:"割り算と余り",file:"04_operators",
+ desc:'<code>//</code> は商、<code>%</code> は余り、<code>**</code> はべき乗。特に <code>%</code> は後のFizzBuzzで大活躍する。',
+ codes:[
+`print(10 / 3)
+print(10 // 3)
+print(10 % 3)
+print(2 ** 8)`,
+`print(7 / 2)
+print(7 // 2)
+print(7 % 2)
+print(3 ** 4)`,
+`print(20 / 6)
+print(20 // 6)
+print(20 % 6)
+print(5 ** 3)`]},
+
+{title:"if で分岐",file:"05_if",
+ desc:'Python最大の特徴、<strong>インデント(字下げ4スペース)</strong>を体に叩き込む回。行末の <code>:</code> も忘れずに。<br>💡 行頭の空白は <b>Tabキー</b>で一気に入力できるよ。',
+ codes:[
+`score = 85
+if score >= 80:
+    print("Great!")
+else:
+    print("Try again")`,
+`hp = 30
+if hp <= 50:
+    print("Danger!")
+else:
+    print("Safe!")`,
+`gold = 120
+if gold >= 100:
+    print("Buy it!")
+else:
+    print("Not enough")`]},
+
+{title:"リスト",file:"06_list",
+ desc:'複数の値をまとめる <code>[ ]</code>。番号は0から数える。<code>append</code> で追加、<code>len</code> で個数。',
+ codes:[
+`foods = ["sushi", "ramen", "curry"]
+print(foods[0])
+foods.append("pizza")
+print(len(foods))`,
+`cats = ["Momo", "Kuro", "Tama"]
+print(cats[1])
+cats.append("Mike")
+print(len(cats))`,
+`nums = [10, 20, 30]
+print(nums[2])
+nums.append(40)
+print(len(nums))`]},
+
+{title:"for でくり返す",file:"07_for",
+ desc:'<code>range(1, 6)</code> は 1〜5(終わりは含まない!)。ループ+インデントの型を指で覚える。',
+ codes:[
+`for i in range(1, 6):
+    print(i)
+print("done!")`,
+`for i in range(3, 8):
+    print(i)
+print("finish!")`,
+`for i in range(0, 10, 2):
+    print(i)
+print("end!")`]},
+
+{title:"積み上げ計算",file:"08_total",
+ desc:'ループの超定番「積み上げ」。<code>+=</code> は足し込み、<code>*=</code> は掛け込み。実行結果がどうなるか予想してから打とう。',
+ codes:[
+`total = 0
+for i in range(1, 101):
+    total += i
+print(total)`,
+`total = 0
+for i in range(1, 11):
+    total += i * i
+print(total)`,
+`total = 1
+for i in range(1, 6):
+    total *= i
+print(total)`]},
+
+{title:"関数を作る",file:"09_def",
+ desc:'<code>def</code> で処理に名前をつけ、<code>return</code> で結果を返す。関数定義の後の空行まで含めて型として覚えよう。',
+ codes:[
+`def triple(x):
+    return x * 3
+
+print(triple(14))`,
+`def add(a, b):
+    return a + b
+
+print(add(30, 12))`,
+`def square(x):
+    return x * x
+
+print(square(9))`]},
+
+{title:"辞書",file:"10_dict",
+ desc:'<code>{"キー": 値}</code> のペアでデータを持つ。ゲームのステータス管理そのもの。<code>+=</code> <code>-=</code> で値を更新!',
+ codes:[
+`player = {"name": "Hero", "level": 5}
+print(player["name"])
+player["level"] += 1
+print(player["level"])`,
+`item = {"name": "Potion", "price": 50}
+print(item["name"])
+item["price"] -= 10
+print(item["price"])`,
+`cat = {"name": "Momo", "age": 3}
+print(cat["name"])
+cat["age"] += 1
+print(cat["age"])`]},
+
+{title:"while ループ",file:"11_while",
+ desc:'条件が成り立つ間くり返す <code>while</code>。カウンタの更新(<code>-= 1</code> など)を忘れると無限ループになるので要注意。',
+ codes:[
+`hp = 5
+while hp > 0:
+    print("HP:", hp)
+    hp -= 1
+print("Game Over")`,
+`n = 1
+while n <= 5:
+    print(n * 10)
+    n += 1
+print("stop")`,
+`fuel = 3
+while fuel > 0:
+    print("Fly!")
+    fuel -= 1
+print("Landed")`]},
+
+{title:"卒業試験 FizzBuzz",file:"12_fizzbuzz",
+ desc:'プログラミングの登竜門。<code>if / elif / else</code> の判定順がキモ(最初に最も厳しい条件を!)。3パターン打てたら入門卒業だ。',
+ codes:[
+`for i in range(1, 16):
+    if i % 15 == 0:
+        print("FizzBuzz")
+    elif i % 3 == 0:
+        print("Fizz")
+    elif i % 5 == 0:
+        print("Buzz")
+    else:
+        print(i)`,
+`for i in range(1, 16):
+    if i % 15 == 0:
+        print("NekoInu")
+    elif i % 3 == 0:
+        print("Neko")
+    elif i % 5 == 0:
+        print("Inu")
+    else:
+        print(i)`,
+`for i in range(1, 16):
+    if i % 6 == 0:
+        print("Boom!")
+    elif i % 2 == 0:
+        print("even")
+    else:
+        print(i)`]},
+];
+
+/* ============================================================
+   章の解説(開始時に表示 / 📖ボタンでいつでも再表示)
+============================================================ */
+const GUIDES=[
+`<p><code>print()</code> は「カッコの中身を画面に表示する」命令。Pythonで一番よく使う命令で、プログラムと人間の会話窓口です。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>print(<b>"こんにちは"</b>)   ← 文字は引用符 " で囲む
+print(<b>123</b>)            ← 数値はそのまま書く</pre>
+<div class="i-sec">▼ コードの動き — print("Hello") と書くと</div>
+<ol class="flow">
+<li><span class="fn">1</span><span>Pythonが <code>print(</code> を見つけて「表示命令だな」と理解する</span></li>
+<li><span class="fn">2</span><span>カッコの中の <code>"Hello"</code> を取り出す。引用符は「ここからここまでが文字」という目印なので、<b>画面には表示されない</b></span></li>
+<li><span class="fn">3</span><span>画面に <span class="res">Hello</span> と表示して、自動で改行する</span></li>
+</ol>
+<ul class="points">
+<li>print 1回 = 1行。2回書けば2行表示される</li>
+<li>カッコ・引用符の閉じ忘れがエラーの9割。指で位置を覚えよう</li>
+</ul>`,
+
+`<p><strong>変数</strong>は「値につける名札つきの箱」。一度入れておけば、名前を書くだけで何度でも中身を取り出せます。<code>=</code> は数学の等号ではなく<strong>代入</strong>です。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>name <b>=</b> "Tomo"          ← nameという箱に"Tomo"を入れる
+print("Hi, " <b>+</b> name)   ← + で文字列をつなぐ</pre>
+<div class="i-sec">▼ コードの動き — name = "Tomo" と書くと</div>
+<ol class="flow">
+<li><span class="fn">1</span><span><code>=</code> の<b>右側が先</b>。<code>"Tomo"</code> という文字列が用意される</span></li>
+<li><span class="fn">2</span><span>それが <code>name</code> という箱に入る(以降、<code>name</code> と書いた場所は "Tomo" として扱われる)</span></li>
+<li><span class="fn">3</span><span><code>print(name)</code> → 箱の中身が取り出されて <span class="res">Tomo</span> と表示</span></li>
+<li><span class="fn">4</span><span><code>print("Hi, " + name)</code> → "Hi, " と "Tomo" が<b>連結</b>されて <span class="res">Hi, Tomo</span> と表示</span></li>
+</ol>
+<ul class="points">
+<li><code>=</code> は「右の値を左の名前に入れる」。左右を逆には書けない</li>
+<li>変数名は英小文字が基本(<code>my_name</code> のように _ 区切り)</li>
+</ul>`,
+
+`<p>Pythonは電卓としても優秀。数値は引用符<strong>なし</strong>で書き、変数どうしでも計算できます。「単価×個数」のように<strong>意味のある名前で計算する</strong>のがプログラムらしさです。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>足し算 <b>+</b>  引き算 <b>-</b>  掛け算 <b>*</b>  割り算 <b>/</b>
+(×や÷は使えない。*と/で代用する)</pre>
+<div class="i-sec">▼ コードの動き — print(price * count) と書くと</div>
+<ol class="flow">
+<li><span class="fn">1</span><span><code>price</code> と <code>count</code> が、それぞれ箱の中身 <b>150</b> と <b>7</b> に置き換わる</span></li>
+<li><span class="fn">2</span><span><code>150 * 7</code> が計算されて <b>1050</b> になる</span></li>
+<li><span class="fn">3</span><span>その結果が print に渡されて <span class="res">1050</span> と表示される</span></li>
+</ol>
+<ul class="points">
+<li>「①変数を中身に置き換え → ②計算 → ③printへ」の順で動く</li>
+<li><code>*</code> <code>/</code> は <code>+</code> <code>-</code> より先に計算される(数学と同じ)。順序を変えたければカッコ ( ) を使う</li>
+</ul>`,
+
+`<p>割り算には3兄弟がいます。「10÷3 = 3 余り 1」という小学校の割り算を、Pythonでは3つの記号に分けて表現します。</p>
+<div class="i-sec">▼ 書き方と結果</div>
+<pre>print(10 <b>/</b> 3)    → 3.333…(普通の割り算・小数になる)
+print(10 <b>//</b> 3)   → 3(<b>商だけ</b>・切り捨て)
+print(10 <b>%</b> 3)    → 1(<b>余りだけ</b>)
+print(2 <b>**</b> 8)    → 256(2を8回掛ける=2の8乗)</pre>
+<div class="i-sec">▼ % (余り) は何に使う?</div>
+<ol class="flow">
+<li><span class="fn">例1</span><span><code>n % 2 == 0</code> → 余りが0なら <b>偶数</b>だと判定できる</span></li>
+<li><span class="fn">例2</span><span><code>n % 3 == 0</code> → 余りが0なら <b>3の倍数</b>。最終章FizzBuzzの主役!</span></li>
+<li><span class="fn">例3</span><span><code>n % 10</code> → 10で割った余り = <b>1の位の数字</b>が取り出せる</span></li>
+</ol>
+<ul class="points">
+<li><code>/</code> は必ず小数(3.0など)になる。整数がほしいときは <code>//</code></li>
+</ul>`,
+
+`<p><code>if</code> は「もし〜なら」の分岐。プログラムに<strong>判断力</strong>を持たせる文法です。Python最大の特徴、<strong>インデント(字下げ4スペース)</strong>もここで登場します。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>if score >= 80<b>:</b>        ← 行末にコロン : が必須
+<b>    </b>print("Great!")    ← 4スペース下げ=「ifの中」
+else<b>:</b>
+<b>    </b>print("Try again")</pre>
+<div class="i-sec">▼ コードの動き — score = 85 のとき</div>
+<ol class="flow">
+<li><span class="fn">1</span><span><code>score >= 80</code> が評価される → <code>85 >= 80</code> は <b>True(真)</b></span></li>
+<li><span class="fn">2</span><span>Trueなので、インデントされた中身を実行 → <span class="res">Great!</span></span></li>
+<li><span class="fn">3</span><span><code>else</code> 側は<b>実行されずにスキップ</b>される</span></li>
+<li><span class="fn">※</span><span>もし score = 50 なら、①がFalseになり、ifの中はスキップ、else側の <span class="res">Try again</span> が実行される。<b>必ずどちらか片方だけ</b>が動く</span></li>
+</ol>
+<ul class="points">
+<li>条件は必ず True / False のどちらかに評価される</li>
+<li>比較: <code>==</code> 等しい / <code>!=</code> 等しくない / <code>&gt;=</code> 以上 / <code>&lt;=</code> 以下</li>
+<li>行頭の空白は <b>Tabキー</b>で一気に入力できるよ</li>
+</ul>`,
+
+`<p><strong>リスト</strong>は複数の値をまとめて入れる「番号つきロッカー」。<code>[ ]</code> で作り、カンマで区切ります。番号(添字)は<strong>0から</strong>数えるのが最重要ルール。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>foods = ["sushi", "ramen", "curry"]
+          ↑0番     ↑1番     ↑2番</pre>
+<div class="i-sec">▼ コードの動き</div>
+<ol class="flow">
+<li><span class="fn">1</span><span><code>foods[0]</code> → 0番のロッカーを開けて中身を取り出す → <span class="res">sushi</span></span></li>
+<li><span class="fn">2</span><span><code>foods.append("pizza")</code> → 末尾に新しいロッカーを増設して "pizza" を入れる(リストは4個になる)</span></li>
+<li><span class="fn">3</span><span><code>len(foods)</code> → ロッカーの個数を数えて <b>4</b> という値を<b>返す</b></span></li>
+<li><span class="fn">4</span><span>その4が print に渡されて <span class="res">4</span> と表示。「<b>lenが数える → printが表示する</b>」という連携プレー</span></li>
+</ol>
+<ul class="points">
+<li>先頭は0番。<code>foods[1]</code> は「2番目」なので注意!</li>
+<li><code>.append()</code> は「リストにくっついた命令」なのでドットでつなぐ</li>
+</ul>`,
+
+`<p><code>for</code> は決まった回数くり返す命令。「<code>i</code> に数を1つずつ入れながら、中身を何度も実行する」のがポイントです。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>for i <b>in range(1, 6):</b>   ← 1,2,3,4,5(6は含まない!)
+    print(i)             ← 字下げ=「くり返す中身」
+print("done!")           ← 字下げなし=ループの外</pre>
+<div class="i-sec">▼ コードの動き</div>
+<ol class="flow">
+<li><span class="fn">1</span><span>1周目: <code>i</code> に <b>1</b> が入って中身を実行 → <span class="res">1</span></span></li>
+<li><span class="fn">2</span><span>2周目: <code>i</code> が <b>2</b> に変わってもう一度実行 → <span class="res">2</span></span></li>
+<li><span class="fn">3</span><span>…同じように 3, 4, 5 と続く(iの中身が毎周変わるのがミソ)</span></li>
+<li><span class="fn">4</span><span>5まで終わるとループ脱出。インデントの外の <code>print("done!")</code> が<b>最後に1回だけ</b>実行される → <span class="res">done!</span></span></li>
+</ol>
+<ul class="points">
+<li><code>range(開始, 終了)</code> の終了の数は<strong>含まれない</strong>(1,6なら1〜5)</li>
+<li><code>range(0, 10, 2)</code> と3つ目を書くと「2飛ばし」(0,2,4,6,8)</li>
+</ul>`,
+
+`<p>ループの超定番「<strong>積み上げ計算</strong>」。合計用の変数を0で用意しておき、ループが1周するたびに足し込んでいきます。貯金箱にコインを入れ続けるイメージです。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>total = 0             ← 空の貯金箱を用意
+for i in range(1, 101):
+    total <b>+=</b> i        ← total = total + i の省略形
+print(total)          ← 最後に貯金箱の中身を表示</pre>
+<div class="i-sec">▼ コードの動き — totalの中身の変化を追う</div>
+<ol class="flow">
+<li><span class="fn">1</span><span>1周目: <code>total += 1</code> → 0+1 で total は <b>1</b></span></li>
+<li><span class="fn">2</span><span>2周目: <code>total += 2</code> → 1+2 で total は <b>3</b></span></li>
+<li><span class="fn">3</span><span>3周目: <code>total += 3</code> → 3+3 で total は <b>6</b> …と、<b>前回までの合計に足し続ける</b></span></li>
+<li><span class="fn">4</span><span>100周目が終わると total は <b>5050</b>。ループの外の print で <span class="res">5050</span> と表示</span></li>
+</ol>
+<ul class="points">
+<li><code>+=</code> 足し込み / <code>-=</code> 引き込み / <code>*=</code> 掛け込み</li>
+<li><code>print(total)</code> をループの<b>外</b>に書くから最終結果だけ出る。中に書くと途中経過が全部出る(それも試すと面白い)</li>
+</ul>`,
+
+`<p><strong>関数</strong>は「よく使う処理に名前をつけて部品化」する仕組み。<code>def</code> で作り、<code>return</code> で計算結果を呼び出し元へ<strong>送り返し</strong>ます。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre><b>def</b> triple(x):        ← 「tripleという部品を作る」宣言
+    <b>return</b> x * 3      ← 結果を呼び出し元へ返す
+
+print(triple(14))     ← 部品を使う(呼び出す)</pre>
+<div class="i-sec">▼ コードの動き — print(triple(14)) の裏側</div>
+<ol class="flow">
+<li><span class="fn">1</span><span><code>def</code> の部分は<b>定義だけ</b>。この時点では何も実行されない(部品を棚に置いただけ)</span></li>
+<li><span class="fn">2</span><span><code>triple(14)</code> で呼び出し発生!引数 <code>x</code> に <b>14</b> が入って関数の中へジャンプ</span></li>
+<li><span class="fn">3</span><span><code>return x * 3</code> → 14×3 = <b>42</b> を持って、呼び出した場所へ帰ってくる</span></li>
+<li><span class="fn">4</span><span>つまり <code>triple(14)</code> と書いた場所が <b>42</b> に化ける → <code>print(42)</code> → <span class="res">42</span></span></li>
+</ol>
+<ul class="points">
+<li><b>return は「値を返す」、print は「画面に出す」</b>。役割がぜんぜん違う(超重要!)</li>
+<li>一度作れば <code>triple(5)</code> <code>triple(100)</code> と何度でも使い回せるのが関数の強み</li>
+</ul>`,
+
+`<p><strong>辞書(dict)</strong>は「名前(キー)で引き出す」データの箱。リストが番号ロッカーなら、辞書は<strong>ラベルつきの引き出し</strong>です。ゲームのステータス管理そのもの。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>player = <b>{</b>"name": "Hero", "level": 5<b>}</b>
+            ↑キー     ↑値</pre>
+<div class="i-sec">▼ コードの動き</div>
+<ol class="flow">
+<li><span class="fn">1</span><span><code>player["name"]</code> → "name" のラベルがついた引き出しを開ける → <span class="res">Hero</span></span></li>
+<li><span class="fn">2</span><span><code>player["level"] += 1</code> の裏側: まず今の値 <b>5</b> を取り出す</span></li>
+<li><span class="fn">3</span><span>5 + 1 = <b>6</b> を計算する</span></li>
+<li><span class="fn">4</span><span>その6を<b>同じ引き出しに戻す</b>。これがレベルアップ処理の正体 → <span class="res">6</span></span></li>
+</ol>
+<ul class="points">
+<li>リストは番号 <code>[0]</code>、辞書はキー <code>["name"]</code> で取り出す</li>
+<li>キーの引用符を忘れずに: <code>player[name]</code> と書くとエラー(nameという変数を探しに行ってしまう)</li>
+</ul>`,
+
+`<p><code>while</code> は「条件が成り立つ<strong>間ずっと</strong>」くり返すループ。何周するかは条件次第なので、<strong>ループ内で条件を変化させる</strong>のが絶対ルールです。</p>
+<div class="i-sec">▼ 書き方</div>
+<pre>hp = 5
+<b>while</b> hp > 0:      ← 毎周、最初にこの条件をチェック
+    print("HP:", hp)
+    hp <b>-=</b> 1        ← ★これを忘れると無限ループ!</pre>
+<div class="i-sec">▼ コードの動き — hpの変化を追う</div>
+<ol class="flow">
+<li><span class="fn">1</span><span>チェック: <code>5 > 0</code>? → True → <span class="res">HP: 5</span> を表示、hp を 4 に減らす</span></li>
+<li><span class="fn">2</span><span>先頭に戻ってチェック: <code>4 > 0</code>? → True → 表示して 3 に…と続く</span></li>
+<li><span class="fn">3</span><span>hp が 0 になった周: チェック <code>0 > 0</code>? → <b>False!</b> → ループを脱出</span></li>
+<li><span class="fn">4</span><span>外の <code>print("Game Over")</code> が実行される → <span class="res">Game Over</span></span></li>
+<li><span class="fn">⚠</span><span>もし <code>hp -= 1</code> を書き忘れると、hpが永遠に5のまま = 条件がずっとTrue = <b>無限ループ</b>でプログラムが止まらなくなる</span></li>
+</ol>
+<ul class="points">
+<li>回数が決まっているなら <code>for</code>、条件次第なら <code>while</code></li>
+<li>「条件チェック → 中身実行 → 先頭に戻る」の順で回っている</li>
+</ul>`,
+
+`<p>卒業試験 <strong>FizzBuzz</strong>!for・if/elif/else・%(余り)の総動員です。カギは「<strong>判定は上から順、最初に当たったところだけ実行</strong>」というルール。</p>
+<div class="i-sec">▼ 書き方(判定の順番が命)</div>
+<pre>if i % 15 == 0:      ← ★一番厳しい条件を最初に!
+    print("FizzBuzz")
+elif i % 3 == 0:     ← 上がダメだったときだけ判定
+    print("Fizz")
+elif i % 5 == 0:
+    print("Buzz")
+else:                ← 全部ダメならそのまま数字
+    print(i)</pre>
+<div class="i-sec">▼ コードの動き — iの値ごとに追ってみる</div>
+<ol class="flow">
+<li><span class="fn">i=7</span><span>15の倍数? No → 3の倍数? No → 5の倍数? No → else → <span class="res">7</span></span></li>
+<li><span class="fn">i=9</span><span>15の倍数? No → 3の倍数? <b>Yes!</b> → <span class="res">Fizz</span>(以降の判定はスキップ)</span></li>
+<li><span class="fn">i=10</span><span>15の倍数? No → 3の倍数? No → 5の倍数? <b>Yes!</b> → <span class="res">Buzz</span></span></li>
+<li><span class="fn">i=15</span><span>15の倍数? <b>Yes!</b> → <span class="res">FizzBuzz</span>。もし3の倍数判定を先に書くと、ここで "Fizz" に捕まって FizzBuzz に一生たどり着けない。<b>だから厳しい条件が先</b></span></li>
+</ol>
+<ul class="points">
+<li>if / elif は「最初にTrueになった1か所だけ」実行される</li>
+<li>これが理解して打てたら、Python入門は堂々の卒業!</li>
+</ul>`,
+];
+
+/* ============================================================
+   状態・保存(localStorageが使える環境なら永続化)
+============================================================ */
+const mem={};
+const store={
+  get(k,d){try{const v=localStorage.getItem("pydojo_"+k);return v==null?d:JSON.parse(v)}catch(e){return (k in mem)?mem[k]:d}},
+  set(k,v){try{localStorage.setItem("pydojo_"+k,JSON.stringify(v))}catch(e){mem[k]=v}}
+};
+let exp=store.get("exp",0);
+let bests=store.get("bests",{});   // {lessonIdx: "S"|"A"|...}
+let clears=store.get("clears",{}); // {lessonIdx: クリア回数}
+const NEED=3;                       // 次の章を解放するのに必要なクリア回数
+let soundOn=store.get("sound",true);
+
+const BELTS=[
+  ["見習い",0,"#9aa0b8"],["白帯",120,"#f5f5f5"],["黄帯",350,"#ffd93d"],
+  ["緑帯",700,"#7dff9a"],["青帯",1200,"#4dd8ff"],["茶帯",1900,"#b8865f"],
+  ["黒帯",2800,"#333344"],["師範代",4200,"#ff6bcb"],["ニャン師範",6000,"#ffab4d"]
+];
+
+let cur=0;          // lesson index
+let pos=0, miss=0, combo=0, maxCombo=0, correct=0;
+let started=false, finished=false, startT=0, timer=null;
+let chars=[];       // span elements
+let skReady=false;
+
+const $=id=>document.getElementById(id);
+const RANK_ORDER={S:4,A:3,B:2,C:1};
+
+/* ============================================================
+   効果音 (WebAudio)
+============================================================ */
+let ac=null;
+function tone(freq,dur=.05,type="square",vol=.06,delay=0){
+  if(!soundOn)return;
+  try{
+    if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,ac.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+delay+dur);
+    o.connect(g);g.connect(ac.destination);
+    o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+dur+.02);
+  }catch(e){}
+}
+const sfx={
+  type(){tone(420+Math.min(combo*6,500),.035,"square",.045)},
+  miss(){tone(110,.15,"sawtooth",.08)},
+  milestone(){tone(880,.08,"square",.07);tone(1174,.1,"square",.07,.09)},
+  clear(){[523,659,784,1046].forEach((f,i)=>tone(f,.12,"triangle",.08,i*.09))},
+  rankS(){[659,784,988,1318,1568].forEach((f,i)=>tone(f,.13,"triangle",.09,i*.08))}
+};
+
+/* ============================================================
+   ニャン師匠
+============================================================ */
+let catTimer=null;
+function catSay(msg,face){
+  const b=$("catBubble"),f=$("catFace");
+  b.textContent=msg;b.classList.add("show");
+  if(face)f.textContent=face;
+  f.classList.remove("jump");void f.offsetWidth;f.classList.add("jump");
+  clearTimeout(catTimer);
+  catTimer=setTimeout(()=>b.classList.remove("show"),2600);
+}
+
+/* ============================================================
+   帯 / EXP
+============================================================ */
+function beltInfo(){
+  let b=BELTS[0],next=null;
+  for(let i=0;i<BELTS.length;i++){
+    if(exp>=BELTS[i][1]){b=BELTS[i];next=BELTS[i+1]||null}
+  }
+  return {b,next};
+}
+function refreshBelt(prevName){
+  const {b,next}=beltInfo();
+  $("beltName").textContent=b[0];
+  $("beltColor").style.background=b[2];
+  const from=b[1],to=next?next[1]:b[1]+1;
+  $("expFill").style.width=Math.min(100,(exp-from)/(to-from)*100)+"%";
+  $("expLabel").textContent=next?`EXP ${exp} / 次の帯まで ${to-exp}`:`EXP ${exp} (最高位!)`;
+  if(prevName&&prevName!==b[0]){
+    catSay(`昇格!「${b[0]}」おめでとうだにゃ〜!!`,"😻");
+    sparkle(24);sfx.rankS();
+  }
+}
+
+/* ============================================================
+   ナビ(前の章を NEED 回クリアすると次が解放)
+============================================================ */
+function unlocked(i){return i===0||(clears[i-1]||0)>=NEED;}
+function buildNav(){
+  LESSONS.forEach((l,i)=>{
+    const b=document.createElement("button");
+    b.className="lesson-btn";
+    b.innerHTML=`<span class="num">${String(i+1).padStart(2,"0")}</span><span>${l.title}</span><span class="rank-mini" id="rankMini${i}"></span><span class="lock" id="lock${i}"></span>`;
+    b.onclick=()=>{
+      if(!unlocked(i)){
+        catSay(`前の章を${NEED}回クリアすると解放だにゃ`,"😾");
+        sfx.miss();
+        return;
+      }
+      loadLesson(i);
+    };
+    $("nav").appendChild(b);
+  });
+}
+function refreshNav(){
+  document.querySelectorAll(".lesson-btn").forEach((b,i)=>{
+    const isOpen=unlocked(i);
+    b.classList.toggle("active",i===cur);
+    b.classList.toggle("locked",!isOpen);
+    $("lock"+i).textContent=isOpen?"":"🔒";
+    const r=bests[i];
+    const el=$("rankMini"+i);
+    el.textContent=isOpen?(r||""):"";
+    el.className="rank-mini "+(r?("rank-"+r):"");
+  });
+}
+
+/* ============================================================
+   レッスン読み込み・描画
+============================================================ */
+const KEYWORDS=["print","def","return","if","elif","else","for","while","in","range","len","append","True","False","None","and","or","not","import"];
+function classifyCode(code){
+  // 各文字に色クラス(kw/st/nm)を割り当てる
+  const cls=new Array(code.length).fill("");
+  // strings
+  let i=0;
+  while(i<code.length){
+    const ch=code[i];
+    if(ch==='"'||ch==="'"){
+      const q=ch;let j=i+1;
+      while(j<code.length&&code[j]!==q&&code[j]!=="\n")j++;
+      for(let k=i;k<=Math.min(j,code.length-1);k++)cls[k]="st";
+      i=j+1;
+    }else i++;
+  }
+  // keywords / numbers (文字列内は除外)
+  const re=/[A-Za-z_]+|\d+\.?\d*/g;let m;
+  while((m=re.exec(code))){
+    if(cls[m.index]==="st")continue;
+    const w=m[0];
+    let c="";
+    if(KEYWORDS.includes(w))c="kw";
+    else if(/^\d/.test(w))c="nm";
+    if(c)for(let k=m.index;k<m.index+w.length;k++)if(!cls[k])cls[k]=c;
+  }
+  return cls;
+}
+
+let curCode="";   // いま打っているお手本コード(パターン)
+let curVar=0;     // パターン番号
+
+function loadLesson(i){
+  cur=i;
+  const l=LESSONS[i];
+  // クリア回数に応じてパターンを切り替え(1回目=A, 2回目=B, 3回目=C, 以降ループ)
+  curVar=(clears[i]||0)%l.codes.length;
+  curCode=l.codes[curVar];
+  const patName=String.fromCharCode(65+curVar); // A/B/C
+  $("lessonHead").innerHTML=`
+    <div class="tag">お手本 ${String(i+1).padStart(2,"0")} / ${String(LESSONS.length).padStart(2,"0")} 〈パターン ${patName}〉</div>
+    <h1>${l.title}</h1>
+    <p>${l.desc}</p>`;
+  $("fname").textContent=`${l.file}_${patName.toLowerCase()}.py`;
+  // build char spans
+  const area=$("codeArea");
+  area.innerHTML="";
+  chars=[];
+  const cls=classifyCode(curCode);
+  for(let k=0;k<curCode.length;k++){
+    const c=curCode[k];
+    const s=document.createElement("span");
+    s.className="ch pend "+(cls[k]||"");
+    if(c==="\n"){s.classList.add("nl");s.textContent="⏎";}
+    else if(c===" "){s.classList.add("sp");s.textContent="·";}
+    else s.textContent=c;
+    area.appendChild(s);
+    chars.push(s);
+    if(c==="\n")area.appendChild(document.createElement("br"));
+  }
+  resetRun();
+  refreshNav();
+  focusInput();
+  // 新しい章に入ったら解説を表示(同じ章のパターン切替では出さない)
+  if(cur!==lastIntroLesson){
+    lastIntroLesson=cur;
+    showIntro();
+  }
+}
+
+function resetRun(){
+  pos=0;miss=0;combo=0;maxCombo=0;correct=0;
+  started=false;finished=false;
+  clearInterval(timer);
+  chars.forEach(s=>{s.classList.remove("done","cur","missflash");s.classList.add("pend");
+    if(s.classList.contains("sp"))s.textContent="·";});
+  if(chars[0])setCursor(0);
+  $("comboVal").textContent="0";
+  $("missVal").textContent="0";
+  $("timeVal").textContent="0.0";
+  $("accVal").textContent="100%";
+  $("typeProg").style.width="0";
+  $("result").classList.remove("show");
+  $("typeCard").classList.remove("finished");
+  $("focusHint").textContent="キーを打つと開始!(半角英数モードで)";
+}
+
+function setCursor(p){
+  chars.forEach(s=>s.classList.remove("cur"));
+  if(chars[p]){
+    chars[p].classList.add("cur");
+    chars[p].scrollIntoView({block:"nearest",inline:"nearest"});
+  }
+}
+
+/* ============================================================
+   タイピング処理
+============================================================ */
+let introOpen=false, lastIntroLesson=-1, pauseAt=0;
+
+function showIntro(){
+  const l=LESSONS[cur];
+  $("iTag").textContent=`お手本 ${String(cur+1).padStart(2,"0")} の解説`;
+  $("iTitle").textContent=l.title;
+  $("iBody").innerHTML=GUIDES[cur]||"";
+  introOpen=true;
+  if(started&&!finished){pauseAt=performance.now();clearInterval(timer);} // 途中で開いたら時間を止める
+  $("introModal").classList.add("show");
+}
+function closeIntro(){
+  if(!introOpen)return;
+  introOpen=false;
+  $("introModal").classList.remove("show");
+  if(started&&!finished){
+    startT+=performance.now()-pauseAt; // 止めていた分を補正
+    timer=setInterval(()=>{
+      $("timeVal").textContent=((performance.now()-startT)/1000).toFixed(1);
+    },100);
+  }
+  focusInput();
+  if(!started&&!finished)catSay("お手本を見ながら、そのまま打つにゃ!","😺");
+}
+$("introStartBtn").onclick=closeIntro;
+$("guideBtn").onclick=()=>showIntro();
+$("introModal").addEventListener("click",e=>{if(e.target===$("introModal"))closeIntro();});
+document.addEventListener("keydown",e=>{
+  if(introOpen&&(e.key==="Enter"||e.key==="Escape")){e.preventDefault();closeIntro();}
+});
+
+function focusInput(){$("hiddenInput").focus({preventScroll:true});}
+document.addEventListener("click",e=>{
+  if(e.target.closest(".type-card")||e.target.closest(".stage"))focusInput();
+});
+
+function startIfNeeded(){
+  if(started||finished)return;
+  started=true;startT=performance.now();
+  $("focusHint").textContent="写経中… ⌨";
+  timer=setInterval(()=>{
+    $("timeVal").textContent=((performance.now()-startT)/1000).toFixed(1);
+  },100);
+}
+
+function updateHud(){
+  const c=$("comboVal");
+  c.textContent=combo;
+  c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");
+  $("missVal").textContent=miss;
+  const acc=correct+miss===0?100:Math.round(correct/(correct+miss)*100);
+  $("accVal").textContent=acc+"%";
+  $("typeProg").style.width=(pos/chars.length*100)+"%";
+}
+
+function handleChar(ch){
+  if(finished||introOpen||!chars.length)return;
+  startIfNeeded();
+  const expect=curCode[pos];
+  if(ch===expect){
+    correct++;combo++;maxCombo=Math.max(maxCombo,combo);
+    const s=chars[pos];
+    s.classList.remove("pend","cur","missflash");
+    s.classList.add("done");
+    if(s.classList.contains("sp"))s.innerHTML="&nbsp;";
+    pos++;
+    sfx.type();
+    if(combo===10)catSay("いい調子だにゃ!","😸");
+    else if(combo===30){catSay("ノってきたにゃ〜!","😸");sfx.milestone();sparkle(6);}
+    else if(combo===60){catSay("神速!すごいにゃ!!","😻");sfx.milestone();sparkle(10);}
+    else if(combo===120){catSay("にゃんと…!師範級だにゃ","🙀");sfx.milestone();sparkle(14);}
+    if(pos>=chars.length){finish();return;}
+    setCursor(pos);
+    updateHud();
+  }else{
+    miss++;
+    if(combo>=15)catSay("あわてない あわてない、にゃ","😿");
+    combo=0;
+    const s=chars[pos];
+    s.classList.add("missflash");
+    setTimeout(()=>s.classList.remove("missflash"),180);
+    const card=$("typeCard");
+    card.classList.remove("shake");void card.offsetWidth;card.classList.add("shake");
+    sfx.miss();
+    updateHud();
+  }
+}
+
+/* Tab = 行頭の連続スペースをまとめて入力(インデント補助) */
+function handleTab(){
+  if(finished)return;
+  let n=0;
+  while(curCode[pos+n]===" ")n++;
+  if(n===0){handleChar("\t");return;} // スペース以外の場所ならミス扱い
+  for(let k=0;k<n;k++)handleChar(" ");
+}
+
+const hidden=$("hiddenInput");
+hidden.addEventListener("beforeinput",e=>{
+  e.preventDefault();
+  if(e.inputType==="insertLineBreak"){handleChar("\n");return;}
+  if(e.data)for(const ch of e.data)handleChar(ch);
+});
+hidden.addEventListener("keydown",e=>{
+  if(introOpen){
+    if(e.key==="Enter"){e.preventDefault();closeIntro();}
+    return;
+  }
+  if(e.isComposing||e.key==="Process"){
+    catSay("日本語入力(IME)をオフ、半角英数にするにゃ!","🙀");
+    return;
+  }
+  if(e.key==="Tab"){e.preventDefault();handleTab();}
+  else if(e.key==="Enter"){e.preventDefault();handleChar("\n");}
+  else if(e.key==="Escape"){resetRun();}
+});
+hidden.addEventListener("blur",()=>{
+  if(!finished)$("focusHint").textContent="クリックして再開";
+});
+hidden.addEventListener("focus",()=>{
+  if(!finished&&!started)$("focusHint").textContent="キーを打つと開始!(半角英数モードで)";
+  else if(!finished)$("focusHint").textContent="写経中… ⌨";
+});
+
+/* ============================================================
+   完了・ランク・実行
+============================================================ */
+function calcRank(){
+  const acc=correct/(correct+miss);
+  if(miss===0)return "S";
+  if(acc>=.95)return "A";
+  if(acc>=.85)return "B";
+  return "C";
+}
+const RANK_STYLE={
+  S:["#ffd93d","完璧!ノーミス写経!"],
+  A:["#4dd8ff","お見事!ほぼ完璧だにゃ"],
+  B:["#7dff9a","いい感じ!もう一回でAを狙おう"],
+  C:["#9aa0b8","写経は回数が命。もう一周!"]
+};
+
+async function finish(){
+  finished=true;
+  clearInterval(timer);
+  const t=((performance.now()-startT)/1000);
+  $("timeVal").textContent=t.toFixed(1);
+  $("typeProg").style.width="100%";
+  const rank=calcRank();
+  // ベスト更新
+  if(!bests[cur]||RANK_ORDER[rank]>RANK_ORDER[bests[cur]]){
+    bests[cur]=rank;store.set("bests",bests);
+  }
+  // EXP付与
+  const prevBelt=beltInfo().b[0];
+  let gain=Math.round(correct*(rank==="S"?1.5:rank==="A"?1.2:1));
+  exp+=gain;store.set("exp",exp);
+  // クリア回数カウント
+  clears[cur]=(clears[cur]||0)+1;
+  store.set("clears",clears);
+  const cnt=Math.min(clears[cur],NEED);
+  const justUnlocked=(clears[cur]===NEED)&&(cur<LESSONS.length-1);
+  // 表示
+  const [color,msg]=RANK_STYLE[rank];
+  $("rankStamp").textContent=rank;
+  $("rankStamp").style.color=color;
+  $("rankStamp").style.textShadow=`0 0 24px ${color}`;
+  $("rankMsg").textContent=msg;
+  const acc=Math.round(correct/(correct+miss)*100);
+  const cps=(correct/t).toFixed(1);
+  $("rStats").innerHTML=
+    `<span>タイム <b>${t.toFixed(1)}s</b></span>`+
+    `<span>ミス <b>${miss}</b></span>`+
+    `<span>正確率 <b>${acc}%</b></span>`+
+    `<span>最大コンボ <b>${maxCombo}</b></span>`+
+    `<span>+<b>${gain}</b> EXP</span>`;
+  // 写経回数ドット(3回で次へ)
+  let dots="";
+  for(let d=0;d<NEED;d++)dots+=`<span class="d ${d<cnt?"on":""}"></span>`;
+  const remain=NEED-cnt;
+  $("clearDots").innerHTML=
+    `<span>写経</span>${dots}`+
+    (clears[cur]>=NEED
+      ?`<span style="color:var(--green)">クリア!${cur<LESSONS.length-1?" 次の章が解放中":""}</span>`
+      :`<span>あと <b style="color:var(--yellow)">${remain}</b> 回で次の章が解放</span>`);
+  $("typeCard").classList.add("finished");
+  $("result").classList.add("show");
+  $("result").scrollTop=0;
+  // 3回クリアするまで「次へ」は出さない
+  const canNext=(clears[cur]>=NEED)&&(cur<LESSONS.length-1);
+  $("nextBtn").style.display=canNext?"":"none";
+  $("retryBtn").textContent=clears[cur]>=NEED?"別パターンを打つ":`次のパターンへ(あと${remain}回)`;
+  refreshNav();
+  rank==="S"?sfx.rankS():sfx.clear();
+  sparkle(rank==="S"?20:10);
+  if(justUnlocked){
+    catSay("3回達成!次の章が解放されたにゃ〜!!","😻");
+    sfx.rankS();sparkle(22);
+  }else if(clears[cur]<NEED){
+    catSay(`${remain}回くり返せば体が覚えるにゃ`,"😺");
+  }else{
+    catSay(rank==="S"?"完璧だにゃ!!ご褒美に実行するにゃ":"打ち終わり!実行してみるにゃ","😻");
+  }
+  refreshBelt(prevBelt);
+  // 本物のPythonとして実行!
+  runPython(curCode);
+}
+
+function skRead(f){
+  if(Sk.builtinFiles===undefined||Sk.builtinFiles["files"][f]===undefined)
+    throw "File not found: '"+f+"'";
+  return Sk.builtinFiles["files"][f];
+}
+async function runPython(code){
+  const out=$("runOut");
+  if(!skReady){out.textContent="(実行環境を読み込み中…)";return;}
+  let buf="";
+  Sk.configure({
+    output:s=>{buf+=s;},
+    read:skRead,
+    __future__:Sk.python3,
+    execLimit:8000
+  });
+  try{
+    await Sk.misceval.asyncToPromise(()=>Sk.importMainWithBody("<stdin>",false,code,true));
+    out.textContent=buf||"(出力なし)";
+  }catch(err){
+    out.textContent=String(err);
+  }
+}
+
+/* ============================================================
+   小物
+============================================================ */
+function sparkle(n){
+  const emo=["✨","⭐","🌟","💫","🎉","🐾"];
+  for(let i=0;i<n;i++){
+    const s=document.createElement("div");
+    s.className="spark";
+    s.textContent=emo[Math.random()*emo.length|0];
+    s.style.left=(20+Math.random()*60)+"%";
+    s.style.top=(15+Math.random()*40)+"%";
+    s.style.animationDelay=(Math.random()*.3)+"s";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1500);
+  }
+}
+
+$("retryBtn").onclick=()=>{
+  loadLesson(cur); // クリア回数が増えているので次のパターンが出る
+  catSay("同じ内容、別のコードだにゃ。新鮮な気持ちで!","😺");
+};
+$("nextBtn").onclick=()=>{if(cur<LESSONS.length-1)loadLesson(cur+1);};
+$("soundBtn").onclick=()=>{
+  soundOn=!soundOn;store.set("sound",soundOn);
+  $("soundBtn").textContent=soundOn?"🔊":"🔇";
+  if(soundOn)tone(660,.08,"triangle",.08);
+};
+$("soundBtn").textContent=soundOn?"🔊":"🔇";
+
+/* ============================================================
+   進捗リセット(確認ダイアログ付き)
+============================================================ */
+function openResetConfirm(){
+  $("confirmModal").classList.add("show");
+  tone(196,.12,"triangle",.07);
+}
+function closeResetConfirm(){$("confirmModal").classList.remove("show");}
+function doReset(){
+  exp=0;bests={};clears={};
+  store.set("exp",0);store.set("bests",{});store.set("clears",{});
+  cur=0;lastIntroLesson=-1;
+  started=false;finished=false;
+  clearInterval(timer);
+  introOpen=false;
+  $("introModal").classList.remove("show");
+  $("result").classList.remove("show");
+  $("typeCard").classList.remove("finished");
+  refreshBelt();refreshNav();
+  // タイトル画面に戻して最初から
+  $("titleContinue").textContent="";
+  $("titleStartBtn").textContent="▶ スタート!";
+  $("titleResetBtn").style.display="none";
+  $("titleScreen").classList.remove("hide");
+  closeResetConfirm();
+  tone(330,.14,"triangle",.08);tone(220,.2,"triangle",.08,.12);
+}
+$("headerResetBtn").onclick=openResetConfirm;
+$("confirmNoBtn").onclick=()=>{closeResetConfirm();catSay("記録は大事にゃ。修行を続けるにゃ","😸");};
+$("confirmYesBtn").onclick=doReset;
+$("confirmModal").addEventListener("click",e=>{if(e.target===$("confirmModal"))closeResetConfirm();});
+document.addEventListener("keydown",e=>{
+  if($("confirmModal").classList.contains("show")&&e.key==="Escape")closeResetConfirm();
+});
+
+/* ============================================================
+   起動(タイトル画面 → スタートで章へ)
+============================================================ */
+function furthestLesson(){
+  let f=0;
+  for(let i=0;i<LESSONS.length;i++)if(unlocked(i))f=i;
+  return f;
+}
+function setupTitle(){
+  const target=furthestLesson();
+  const hasProgress=exp>0||Object.keys(clears).length>0;
+  if(hasProgress){
+    $("titleContinue").innerHTML=`前回のつづき: <b>第${target+1}章「${LESSONS[target].title}」</b>から再開`;
+    $("titleStartBtn").textContent="▶ つづきから";
+    $("titleResetBtn").style.display="";
+  }
+  $("titleStartBtn").onclick=()=>{
+    tone(660,.08,"triangle",.09);tone(880,.1,"triangle",.09,.09);
+    $("titleScreen").classList.add("hide");
+    loadLesson(furthestLesson()); // ここで第1章(または続き)の解説が表示される
+  };
+  $("titleResetBtn").onclick=openResetConfirm;
+}
+
+async function initPy(){
+  const ok=await window.__skReady;
+  if(!ok||typeof Sk==="undefined"){
+    // 実行環境がなくても写経はできるようにする
+    $("statusDot").className="dot";
+    $("statusText").textContent="offline (写経のみ)";
+    $("loader").classList.add("hide");
+    return;
+  }
+  skReady=true;
+  $("statusDot").className="dot ready";
+  $("statusText").textContent="Python ready";
+  $("loader").classList.add("hide");
+}
+
+buildNav();
+setupTitle();
+refreshBelt();
+refreshNav();
+initPy();
+</script>
+</body>
+</html>
