@@ -536,28 +536,48 @@ button.game-btn.danger:active{box-shadow:0 1px 0 #a03040}
   caret-color:transparent;
 }
 .mobile-kbd{display:none}
-.mobile-kbd-head{display:flex;align-items:center;gap:8px}
+.mobile-kbd-head{display:flex;align-items:center;gap:8px;min-height:22px}
 .mobile-kbd-head strong{font-family:var(--px);font-size:11px;color:var(--cyan);letter-spacing:1px}
 .mobile-kbd-head span{font-size:10px;color:var(--dim)}
-.mobile-kbd-open{
-  margin-left:auto;min-height:36px;padding:6px 12px;border-radius:8px;
-  border:1px solid var(--cyan);background:var(--panel2);color:var(--text);
-  font-family:var(--jp);font-weight:800;font-size:12px;cursor:pointer;
-  touch-action:manipulation;
+.mobile-kbd-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mobile-kbd-tab{
+  min-height:30px;border-radius:7px;border:1px solid var(--line);
+  background:var(--panel);color:var(--dim);font-family:var(--jp);font-weight:800;
+  font-size:11px;cursor:pointer;touch-action:manipulation;
 }
-.mobile-key-grid{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:5px}
+.mobile-kbd-tab.active{background:var(--cyan);border-color:var(--cyan);color:#00222e}
+.mobile-key-page{display:none;flex-direction:column;gap:5px}
+.mobile-key-page.active{display:flex}
+.mobile-key-row{display:flex;justify-content:center;gap:4px;min-width:0}
 .mobile-key{
-  min-width:0;min-height:39px;padding:4px 2px;border-radius:8px;
-  border:1px solid var(--line);background:var(--panel2);color:var(--text);
-  box-shadow:0 2px 0 #0b0b20;font-family:var(--mono);font-size:16px;
+  flex:1 1 0;min-width:0;max-width:46px;min-height:37px;padding:3px 1px;
+  border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);
+  box-shadow:0 2px 0 #0b0b20;font-family:var(--mono);font-size:15px;
   touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;
 }
 .mobile-key:active{transform:translateY(2px);box-shadow:none;border-color:var(--cyan)}
-.mobile-key.wide{grid-column:span 2;font-family:var(--jp);font-size:10px;font-weight:800}
+.mobile-key.expected-key{
+  border-color:var(--yellow);color:var(--yellow);
+  box-shadow:0 0 0 1px rgba(255,217,61,.28),0 0 13px rgba(255,217,61,.38);
+  animation:keyGuide 1s steps(2) infinite;
+}
+@keyframes keyGuide{50%{filter:brightness(1.35)}}
+.mobile-control-row{display:grid;grid-template-columns:1.15fr 1.2fr 2.6fr 1.35fr;gap:5px}
+.mobile-action-key{
+  min-height:40px;padding:4px 3px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel);color:var(--text);font-family:var(--jp);font-size:10px;
+  font-weight:800;box-shadow:0 2px 0 #0b0b20;cursor:pointer;touch-action:manipulation;
+  user-select:none;-webkit-user-select:none;
+}
+.mobile-action-key:active{transform:translateY(2px);box-shadow:none}
+.mobile-action-key.shift-on{background:var(--pink);border-color:var(--pink);color:#27001a}
+.mobile-action-key.expected-key{border-color:var(--yellow);color:var(--yellow);box-shadow:0 0 13px rgba(255,217,61,.38)}
+.mobile-action-key.space{font-family:var(--mono);letter-spacing:2px}
 body.run-finished .mobile-kbd{display:none}
 
 @media (max-width:960px){
   body{height:var(--app-height,100dvh);min-height:0}
+  #hiddenInput{display:none!important}
   header{
     flex-wrap:nowrap;gap:8px;
     padding:7px max(8px,env(safe-area-inset-right)) 7px max(8px,env(safe-area-inset-left));
@@ -601,10 +621,9 @@ body.run-finished .mobile-kbd{display:none}
 
   .main{width:100%;min-width:0}
   .stage{
-    width:100%;padding:12px 9px calc(194px + env(safe-area-inset-bottom));
-    gap:10px;align-items:stretch;scroll-padding-bottom:196px;
+    width:100%;padding:12px 9px calc(292px + env(safe-area-inset-bottom));
+    gap:10px;align-items:stretch;scroll-padding-bottom:294px;
   }
-  body.keyboard-visible .stage{padding-bottom:calc(102px + env(safe-area-inset-bottom));scroll-padding-bottom:104px}
   body.run-finished .stage{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
   .lesson-head{max-width:none}
   .lesson-head .tag{font-size:10px;letter-spacing:1px}
@@ -638,8 +657,7 @@ body.run-finished .mobile-kbd{display:none}
   .result .btns{width:100%;gap:8px;flex-wrap:wrap;justify-content:center}
   button.game-btn{min-height:46px;padding:10px 14px;font-size:13px;touch-action:manipulation}
 
-  .cat{right:8px;bottom:calc(182px + env(safe-area-inset-bottom));gap:2px}
-  body.keyboard-visible .cat{bottom:calc(94px + env(safe-area-inset-bottom))}
+  .cat{right:8px;bottom:calc(282px + env(safe-area-inset-bottom));gap:2px}
   body.run-finished .cat{bottom:calc(10px + env(safe-area-inset-bottom))}
   .cat .face{font-size:32px}
   .cat .name{display:none}
@@ -647,20 +665,11 @@ body.run-finished .mobile-kbd{display:none}
 
   .mobile-kbd{
     display:flex;position:fixed;z-index:65;left:0;right:0;bottom:0;
-    flex-direction:column;gap:7px;
-    padding:7px max(7px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left));
-    background:rgba(13,13,31,.97);border-top:2px solid var(--line);
-    box-shadow:0 -8px 25px rgba(0,0,0,.35);
+    flex-direction:column;gap:5px;
+    padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+    background:rgba(13,13,31,.985);border-top:2px solid var(--cyan);
+    box-shadow:0 -8px 25px rgba(0,0,0,.42);
   }
-  body.keyboard-visible .mobile-kbd{gap:5px;padding-top:5px}
-  body.keyboard-visible .mobile-kbd-head span{display:none}
-  body.keyboard-visible .mobile-key-grid{
-    display:flex;gap:5px;overflow-x:auto;overscroll-behavior-x:contain;
-    padding-bottom:2px;scrollbar-width:none;
-  }
-  body.keyboard-visible .mobile-key-grid::-webkit-scrollbar{display:none}
-  body.keyboard-visible .mobile-key{flex:0 0 42px;min-height:38px}
-  body.keyboard-visible .mobile-key.wide{flex-basis:78px}
 
   #titleScreen{
     justify-content:flex-start;
@@ -695,16 +704,23 @@ body.run-finished .mobile-kbd{display:none}
   .belt{padding:3px 5px}
   .exp-track{width:46px}
   #headerResetBtn{display:none}
-  .mobile-key-grid{gap:4px}
-  .mobile-key{min-height:38px;font-size:15px;border-radius:7px}
-  .mobile-key.wide{font-size:9.5px}
+  .mobile-key-row{gap:3px}
+  .mobile-key{min-height:36px;font-size:14px;border-radius:7px}
+  .mobile-control-row{gap:4px}
+  .mobile-action-key{font-size:9px}
 }
 
 @media (max-width:960px) and (orientation:landscape){
-  .stage{padding-bottom:calc(154px + env(safe-area-inset-bottom))}
-  .mobile-kbd{gap:4px;padding-top:4px}
-  .mobile-kbd-head span{display:none}
-  .mobile-key{min-height:32px}
+  .stage{padding-bottom:calc(216px + env(safe-area-inset-bottom));scroll-padding-bottom:218px}
+  .mobile-kbd{gap:3px;padding-top:3px}
+  .mobile-kbd-head{display:none}
+  .mobile-kbd-tabs{position:absolute;right:6px;top:4px;width:150px;z-index:2}
+  .mobile-kbd-tab{min-height:25px;font-size:9px}
+  .mobile-key-page{gap:3px;padding-right:158px}
+  .mobile-key-row{gap:3px}
+  .mobile-key{min-height:29px;font-size:12px;max-width:42px}
+  .mobile-control-row{position:absolute;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));width:150px;grid-template-columns:1fr 1fr;gap:3px}
+  .mobile-action-key{min-height:30px;font-size:8px}
   .cat{display:none}
   .lesson-head p{display:none}
 }
@@ -804,36 +820,21 @@ body.run-finished .mobile-kbd{display:none}
   </div>
 </div>
 
-<div class="mobile-kbd" id="mobileKbd" aria-label="スマホ用Python補助キーボード">
+<div class="mobile-kbd" id="mobileKbd" aria-label="スマホ用Python画面キーボード">
   <div class="mobile-kbd-head">
-    <strong>PY補助キー</strong><span>記号・改行・インデントをワンタップ</span>
-    <button class="mobile-kbd-open" id="mobileKbdOpen" type="button">⌨ 文字入力</button>
+    <strong>PYフルキーボード</strong><span>スマホの文字入力は使わず、下のキーだけで入力</span>
   </div>
-  <div class="mobile-key-grid">
-    <button class="mobile-key wide" type="button" data-action="tab" tabindex="-1">TAB 字下げ</button>
-    <button class="mobile-key wide" type="button" data-key=" " tabindex="-1">SPACE</button>
-    <button class="mobile-key wide" type="button" data-action="enter" tabindex="-1">ENTER ↵</button>
-    <button class="mobile-key" type="button" data-key="&quot;" tabindex="-1">&quot;</button>
-    <button class="mobile-key" type="button" data-key="'" tabindex="-1">'</button>
-    <button class="mobile-key" type="button" data-key=":" tabindex="-1">:</button>
-    <button class="mobile-key" type="button" data-key="=" tabindex="-1">=</button>
-    <button class="mobile-key" type="button" data-key="_" tabindex="-1">_</button>
-    <button class="mobile-key" type="button" data-key="(" tabindex="-1">(</button>
-    <button class="mobile-key" type="button" data-key=")" tabindex="-1">)</button>
-    <button class="mobile-key" type="button" data-key="[" tabindex="-1">[</button>
-    <button class="mobile-key" type="button" data-key="]" tabindex="-1">]</button>
-    <button class="mobile-key" type="button" data-key="{" tabindex="-1">{</button>
-    <button class="mobile-key" type="button" data-key="}" tabindex="-1">}</button>
-    <button class="mobile-key" type="button" data-key="," tabindex="-1">,</button>
-    <button class="mobile-key" type="button" data-key="." tabindex="-1">.</button>
-    <button class="mobile-key" type="button" data-key="+" tabindex="-1">+</button>
-    <button class="mobile-key" type="button" data-key="-" tabindex="-1">−</button>
-    <button class="mobile-key" type="button" data-key="*" tabindex="-1">*</button>
-    <button class="mobile-key" type="button" data-key="/" tabindex="-1">/</button>
-    <button class="mobile-key" type="button" data-key="%" tabindex="-1">%</button>
-    <button class="mobile-key" type="button" data-key="<" tabindex="-1">&lt;</button>
-    <button class="mobile-key" type="button" data-key=">" tabindex="-1">&gt;</button>
-    <button class="mobile-key" type="button" data-key="!" tabindex="-1">!</button>
+  <div class="mobile-kbd-tabs" role="tablist" aria-label="キーの種類">
+    <button class="mobile-kbd-tab active" id="mobileLettersTab" type="button" data-page="letters">ABC・数字</button>
+    <button class="mobile-kbd-tab" id="mobileSymbolsTab" type="button" data-page="symbols">記号</button>
+  </div>
+  <div class="mobile-key-page active" id="mobileLetters" data-key-page="letters"></div>
+  <div class="mobile-key-page" id="mobileSymbols" data-key-page="symbols"></div>
+  <div class="mobile-control-row">
+    <button class="mobile-action-key" id="mobileShift" type="button" data-action="shift">⇧ SHIFT</button>
+    <button class="mobile-action-key" type="button" data-action="tab">TAB 字下げ</button>
+    <button class="mobile-action-key space" type="button" data-action="space">SPACE</button>
+    <button class="mobile-action-key" type="button" data-action="enter">ENTER ↵</button>
   </div>
 </div>
 
@@ -871,7 +872,7 @@ body.run-finished .mobile-kbd{display:none}
   <div class="name">ニャン師匠</div>
 </div>
 
-<textarea id="hiddenInput" rows="1" inputmode="text" enterkeyhint="enter" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="コード入力欄"></textarea>
+<textarea id="hiddenInput" rows="1" inputmode="none" enterkeyhint="enter" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="パソコン用コード入力欄"></textarea>
 
 <script>
 /* ============================================================
@@ -1485,7 +1486,7 @@ function loadLesson(i){
 
 function mobileHint(idle=true){
   return window.matchMedia("(max-width:960px)").matches
-    ?(idle?"画面をタップ → 文字入力 / 下の補助キーも使える":"写経中… 📱")
+    ?(idle?"下の画面キーだけで入力スタート!":"画面キーで写経中… 📱")
     :(idle?"キーを打つと開始!(半角英数モードで)":"写経中… ⌨");
 }
 
@@ -1513,6 +1514,7 @@ function setCursor(p){
     chars[p].classList.add("cur");
     chars[p].scrollIntoView({block:"nearest",inline:"nearest"});
   }
+  syncMobileKeyboardToExpected();
 }
 
 /* ============================================================
@@ -1552,10 +1554,13 @@ document.addEventListener("keydown",e=>{
 
 function focusInput(){
   const input=$("hiddenInput");
+  // スマホではOS標準キーボードを開かず、画面内キーだけを使う
+  if(window.matchMedia("(max-width:960px)").matches){input.blur();return;}
   try{input.focus({preventScroll:true});}catch(e){input.focus();}
 }
 document.addEventListener("click",e=>{
-  if(e.target.closest(".type-card")||e.target.closest(".stage"))focusInput();
+  if(!window.matchMedia("(max-width:960px)").matches&&
+     (e.target.closest(".type-card")||e.target.closest(".stage")))focusInput();
 });
 
 /* スマホの章一覧 */
@@ -1576,7 +1581,7 @@ function syncViewportHeight(){
   if(Math.abs(window.innerWidth-viewportWidth)>50){viewportWidth=window.innerWidth;viewportMax=h;}
   viewportMax=Math.max(viewportMax,h);
   document.documentElement.style.setProperty("--app-height",`${Math.round(h)}px`);
-  document.body.classList.toggle("keyboard-visible",viewportMax-h>120);
+  document.body.classList.remove("keyboard-visible");
 }
 syncViewportHeight();
 window.addEventListener("resize",syncViewportHeight,{passive:true});
@@ -1685,7 +1690,7 @@ hidden.addEventListener("compositionstart",()=>{
   catSay("日本語入力を英字入力に切り替えるにゃ!","🙀");
 });
 hidden.addEventListener("blur",()=>{
-  if(!finished)$("focusHint").textContent=window.matchMedia("(max-width:960px)").matches?"タップして文字入力を再開":"クリックして再開";
+  if(!finished)$("focusHint").textContent=window.matchMedia("(max-width:960px)").matches?"下の画面キーで入力":"クリックして再開";
 });
 hidden.addEventListener("focus",()=>{
   hidden.value="";
@@ -1693,16 +1698,111 @@ hidden.addEventListener("focus",()=>{
   else if(!finished)$("focusHint").textContent=mobileHint(false);
 });
 
-/* スマホ用のPython記号キー */
-$("mobileKbdOpen").addEventListener("click",focusInput);
-document.querySelectorAll(".mobile-key").forEach(btn=>{
-  btn.addEventListener("pointerdown",e=>{
-    e.preventDefault();
-    if(btn.dataset.action==="tab")handleTab();
-    else if(btn.dataset.action==="enter")handleChar("\n");
-    else if(btn.dataset.key!==undefined)feedInputText(btn.dataset.key);
-    focusInput();
+/* スマホ用フル画面キーボード */
+const MOBILE_LETTER_ROWS=[
+  ["1","2","3","4","5","6","7","8","9","0"],
+  ["q","w","e","r","t","y","u","i","o","p"],
+  ["a","s","d","f","g","h","j","k","l"],
+  ["z","x","c","v","b","n","m"]
+];
+const MOBILE_SYMBOL_ROWS=[
+  ['"',"'",":","=","_","(",")","[","]",","],
+  [".","+","-","*","/","%","<",">","!","#"],
+  ["{","}","@","&","|","\\","?",";","$","^"]
+];
+let mobileShift=false;
+let mobileKeyPage="letters";
+
+function makeMobileKey(value,isLetter=false){
+  const btn=document.createElement("button");
+  btn.type="button";
+  btn.className="mobile-key";
+  btn.dataset.value=value;
+  if(isLetter)btn.dataset.letter=value;
+  btn.textContent=isLetter&&mobileShift?value.toUpperCase():value;
+  btn.setAttribute("aria-label",value===" "?"スペース":value);
+  return btn;
+}
+function fillMobilePage(id,rows,letters=false){
+  const page=$(id);page.innerHTML="";
+  rows.forEach(row=>{
+    const line=document.createElement("div");line.className="mobile-key-row";
+    row.forEach(value=>line.appendChild(makeMobileKey(value,letters&&/^[a-z]$/.test(value))));
+    page.appendChild(line);
   });
+}
+function renderMobileKeyboard(){
+  fillMobilePage("mobileLetters",MOBILE_LETTER_ROWS,true);
+  fillMobilePage("mobileSymbols",MOBILE_SYMBOL_ROWS,false);
+  $("mobileShift").classList.toggle("shift-on",mobileShift);
+  $("mobileShift").textContent=mobileShift?"⇧ 大文字 ON":"⇧ SHIFT";
+  highlightExpectedMobileKey();
+}
+function setMobileKeyPage(page){
+  mobileKeyPage=page;
+  document.querySelectorAll("[data-key-page]").forEach(el=>el.classList.toggle("active",el.dataset.keyPage===page));
+  document.querySelectorAll(".mobile-kbd-tab").forEach(el=>el.classList.toggle("active",el.dataset.page===page));
+}
+function expectedMobileValue(){
+  if(finished||!curCode||pos>=curCode.length)return null;
+  return curCode[pos];
+}
+function highlightExpectedMobileKey(){
+  document.querySelectorAll("#mobileKbd .expected-key").forEach(el=>el.classList.remove("expected-key"));
+  const expect=expectedMobileValue();
+  if(expect===null)return;
+  if(expect==="\n"){
+    document.querySelector('[data-action="enter"]')?.classList.add("expected-key");return;
+  }
+  if(expect===" "){
+    let run=0;while(curCode[pos+run]===" ")run++;
+    const action=run>1?"tab":"space";
+    document.querySelector(`[data-action="${action}"]`)?.classList.add("expected-key");return;
+  }
+  document.querySelectorAll("#mobileKbd [data-value]").forEach(btn=>{
+    const base=btn.dataset.letter||btn.dataset.value;
+    const output=btn.dataset.letter?(mobileShift?base.toUpperCase():base):base;
+    if(output===expect)btn.classList.add("expected-key");
+  });
+}
+function syncMobileKeyboardToExpected(){
+  if(!window.matchMedia("(max-width:960px)").matches)return;
+  const expect=expectedMobileValue();
+  if(expect===null){highlightExpectedMobileKey();return;}
+  if(/[A-Za-z0-9]/.test(expect)){
+    mobileShift=/[A-Z]/.test(expect);
+    setMobileKeyPage("letters");
+    renderMobileKeyboard();
+  }else if(expect!==" "&&expect!=="\n"){
+    mobileShift=false;
+    setMobileKeyPage("symbols");
+    renderMobileKeyboard();
+  }else{
+    highlightExpectedMobileKey();
+  }
+}
+
+renderMobileKeyboard();
+setMobileKeyPage("letters");
+$("mobileKbd").addEventListener("pointerdown",e=>{
+  const btn=e.target.closest("button");
+  if(!btn)return;
+  e.preventDefault();
+  if(btn.dataset.page){setMobileKeyPage(btn.dataset.page);highlightExpectedMobileKey();return;}
+  const action=btn.dataset.action;
+  if(action==="shift"){
+    mobileShift=!mobileShift;renderMobileKeyboard();return;
+  }
+  if(action==="tab"){handleTab();return;}
+  if(action==="space"){handleChar(" ");return;}
+  if(action==="enter"){handleChar("\n");return;}
+  if(btn.dataset.value!==undefined){
+    const base=btn.dataset.letter||btn.dataset.value;
+    const value=btn.dataset.letter?(mobileShift?base.toUpperCase():base):base;
+    if(btn.dataset.letter&&mobileShift)mobileShift=false;
+    handleChar(value);
+    renderMobileKeyboard();
+  }
 });
 
 /* ============================================================
