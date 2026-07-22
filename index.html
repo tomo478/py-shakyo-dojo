@@ -2,8 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#0d0d1f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PY写経道場 — 打って覚えるPython</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=IBM+Plex+Mono:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -53,8 +52,7 @@ window.__skReady=(async()=>{
   --jp:'M PLUS Rounded 1c',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;min-height:100%}
-html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+html,body{height:100%}
 body{
   font-family:var(--jp);
   color:var(--text);
@@ -64,9 +62,6 @@ body{
     var(--bg);
   overflow:hidden;
   display:flex;flex-direction:column;
-  height:var(--app-height,100dvh);
-  min-height:100svh;
-  overscroll-behavior:none;
 }
 /* うっすらグリッド + スキャンライン */
 body::before{
@@ -123,9 +118,6 @@ header{
   transition:.15s;
 }
 .icon-btn:hover{border-color:var(--cyan)}
-.mobile-menu-btn{display:none}
-.nav-close{display:none}
-.nav-backdrop{display:none}
 /* ============ layout ============ */
 .main{flex:1;display:flex;min-height:0;position:relative;z-index:1}
 nav{
@@ -250,6 +242,54 @@ nav h2{
 .ch.missflash{background:var(--red);color:#fff !important;animation:none}
 .ch.sp.pend{color:#35386b}
 .ch.nl{font-size:14px;opacity:.85}
+/* コード枠の外の注記(PCのみ表示) */
+.type-note{
+  width:100%;max-width:860px;
+  padding:2px 6px;
+  font-size:11px;color:var(--dim);line-height:1.7;
+  text-align:left;
+}
+.type-note b{color:#7f86c0}
+@media (max-width:820px){.type-note{display:none}}
+/* ============ 結果画面: 実行結果 + コード解説を横並び ============ */
+.res-cols{
+  display:flex;gap:14px;width:100%;max-width:760px;
+  align-items:stretch;
+}
+.res-col{flex:1;min-width:0;display:flex;flex-direction:column}
+.res-col .col-title{
+  font-family:var(--px);font-size:11px;letter-spacing:2px;
+  margin-bottom:5px;text-align:left;
+}
+.res-col.out-col .col-title{color:var(--green)}
+.res-col.exp-col .col-title{color:var(--cyan)}
+.explain-box{
+  flex:1;text-align:left;
+  background:#000018;border:2px solid var(--line);border-radius:10px;
+  padding:8px 10px;max-height:200px;overflow-y:auto;
+}
+.ex-row{
+  display:flex;gap:8px;align-items:flex-start;
+  padding:4px 2px;border-bottom:1px dashed rgba(255,255,255,.07);
+}
+.ex-row:last-child{border-bottom:none}
+.ex-row .ex-ln{
+  font-family:var(--px);font-size:10px;color:var(--dim);
+  min-width:14px;text-align:right;padding-top:3px;
+}
+.ex-row .ex-code{
+  font-family:var(--mono);font-size:11px;color:#cfe3ff;
+  white-space:pre;flex-shrink:0;max-width:44%;overflow-x:auto;
+}
+.ex-row .ex-note{
+  font-size:10.5px;line-height:1.55;color:var(--dim);
+  border-left:2px solid var(--line);padding-left:8px;flex:1;
+}
+.ex-row .ex-note b{color:var(--yellow)}
+@media (max-width:760px){
+  .res-cols{flex-direction:column}
+  .explain-box{max-height:150px}
+}
 /* progress line under code */
 .type-progress{height:6px;background:var(--bg2)}
 .type-progress i{
@@ -258,7 +298,7 @@ nav h2{
   transition:width .12s;
 }
 /* result overlay */
-.type-card.finished{min-height:560px}
+.type-card.finished{min-height:600px}
 .result{
   position:absolute;inset:0;z-index:5;
   background:rgba(13,13,31,.95);
@@ -295,15 +335,14 @@ nav h2{
 }
 .result .r-stats b{color:var(--text)}
 .result .out-box{
-  width:100%;max-width:520px;text-align:left;
+  flex:1;text-align:left;
   background:#000018;border:2px solid var(--line);border-radius:10px;
-  padding:10px 14px;font-family:var(--mono);font-size:13.5px;line-height:1.7;
-  color:var(--green);max-height:150px;overflow-y:auto;white-space:pre-wrap;
+  padding:8px 12px;font-family:var(--mono);font-size:13px;line-height:1.7;
+  color:var(--green);max-height:200px;overflow-y:auto;white-space:pre-wrap;
 }
 .out-box .out-title{color:var(--dim);font-size:11px;letter-spacing:1px;margin-bottom:4px}
 .result .btns{display:flex;gap:12px;margin-top:4px}
 button.game-btn{
-  touch-action:manipulation;
   font-family:var(--px);font-size:15px;letter-spacing:1px;
   padding:10px 22px;border-radius:10px;cursor:pointer;
   border:none;color:#1b1500;background:var(--yellow);
@@ -421,7 +460,6 @@ button.game-btn.danger:active{box-shadow:0 1px 0 #a03040}
 .t-step .t-icon{font-size:26px;margin-bottom:6px}
 .t-step .t-txt{font-size:12.5px;font-weight:700;color:#d5d9ff;line-height:1.7}
 .title-start-btn{
-  touch-action:manipulation;
   font-family:var(--px);font-size:20px;letter-spacing:2px;
   padding:16px 44px;border-radius:14px;cursor:pointer;border:none;
   color:#1b1500;background:var(--yellow);
@@ -518,213 +556,11 @@ button.game-btn.danger:active{box-shadow:0 1px 0 #a03040}
 }
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
-@media (max-width:960px){
+@media (max-width:820px){
   nav{position:absolute;left:-260px}
   .code-area{font-size:16px;padding:18px}
   .rank-stamp{font-size:64px}
 }
-/* ============ スマホ最適化 ============ */
-#hiddenInput{
-  position:fixed;
-  left:50%;bottom:0;top:auto;
-  width:2px;height:2px;
-  padding:0;border:0;
-  opacity:.01;pointer-events:none;
-  font-size:16px;
-  transform:translateX(-50%);
-  background:transparent;color:transparent;
-  caret-color:transparent;
-}
-.mobile-kbd{display:none}
-.mobile-kbd-head{display:flex;align-items:center;gap:8px;min-height:22px}
-.mobile-kbd-head strong{font-family:var(--px);font-size:11px;color:var(--cyan);letter-spacing:1px}
-.mobile-kbd-head span{font-size:10px;color:var(--dim)}
-.mobile-kbd-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.mobile-kbd-tab{
-  min-height:30px;border-radius:7px;border:1px solid var(--line);
-  background:var(--panel);color:var(--dim);font-family:var(--jp);font-weight:800;
-  font-size:11px;cursor:pointer;touch-action:manipulation;
-}
-.mobile-kbd-tab.active{background:var(--cyan);border-color:var(--cyan);color:#00222e}
-.mobile-key-page{display:none;flex-direction:column;gap:5px}
-.mobile-key-page.active{display:flex}
-.mobile-key-row{display:flex;justify-content:center;gap:4px;min-width:0}
-.mobile-key{
-  flex:1 1 0;min-width:0;max-width:46px;min-height:37px;padding:3px 1px;
-  border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);
-  box-shadow:0 2px 0 #0b0b20;font-family:var(--mono);font-size:15px;
-  touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;
-}
-.mobile-key:active{transform:translateY(2px);box-shadow:none;border-color:var(--cyan)}
-.mobile-key.expected-key{
-  border-color:var(--yellow);color:var(--yellow);
-  box-shadow:0 0 0 1px rgba(255,217,61,.28),0 0 13px rgba(255,217,61,.38);
-  animation:keyGuide 1s steps(2) infinite;
-}
-@keyframes keyGuide{50%{filter:brightness(1.35)}}
-.mobile-control-row{display:grid;grid-template-columns:1.15fr 1.2fr 2.6fr 1.35fr;gap:5px}
-.mobile-action-key{
-  min-height:40px;padding:4px 3px;border-radius:8px;border:1px solid var(--line);
-  background:var(--panel);color:var(--text);font-family:var(--jp);font-size:10px;
-  font-weight:800;box-shadow:0 2px 0 #0b0b20;cursor:pointer;touch-action:manipulation;
-  user-select:none;-webkit-user-select:none;
-}
-.mobile-action-key:active{transform:translateY(2px);box-shadow:none}
-.mobile-action-key.shift-on{background:var(--pink);border-color:var(--pink);color:#27001a}
-.mobile-action-key.expected-key{border-color:var(--yellow);color:var(--yellow);box-shadow:0 0 13px rgba(255,217,61,.38)}
-.mobile-action-key.space{font-family:var(--mono);letter-spacing:2px}
-body.run-finished .mobile-kbd{display:none}
-
-@media (max-width:960px){
-  body{height:var(--app-height,100dvh);min-height:0}
-  #hiddenInput{display:none!important}
-  header{
-    flex-wrap:nowrap;gap:8px;
-    padding:7px max(8px,env(safe-area-inset-right)) 7px max(8px,env(safe-area-inset-left));
-    min-height:54px;
-  }
-  .logo{font-size:16px;gap:6px;white-space:nowrap}
-  .logo .coin{width:26px;height:26px;font-size:13px}
-  .belt-area{gap:6px;min-width:0}
-  .belt{font-size:11px;padding:3px 7px;gap:5px;white-space:nowrap}
-  .belt .belt-color{width:18px;height:8px}
-  .exp-track{width:62px;height:7px}
-  .exp-label{display:none}
-  .hd-right{gap:6px;margin-left:auto}
-  .status span:last-child{display:none}
-  .icon-btn{width:38px;height:38px;min-width:38px;font-size:17px}
-  .mobile-menu-btn{display:inline-grid;place-items:center}
-
-  nav{
-    position:fixed;z-index:92;left:0;top:0;bottom:0;
-    width:min(84vw,320px);min-width:0;
-    padding:68px 10px calc(28px + env(safe-area-inset-bottom));
-    border-right:2px solid var(--cyan);
-    background:rgba(20,20,43,.98);
-    transform:translateX(-104%);
-    transition:transform .22s ease;
-    box-shadow:14px 0 40px rgba(0,0,0,.45);
-  }
-  body.nav-open nav{transform:translateX(0)}
-  .nav-close{
-    display:grid;place-items:center;position:absolute;right:12px;top:12px;
-    width:42px;height:42px;border-radius:10px;border:2px solid var(--line);
-    background:var(--panel);color:var(--text);font-size:24px;cursor:pointer;
-  }
-  .nav-backdrop{
-    position:fixed;z-index:91;inset:0;background:rgba(0,0,0,.58);
-    backdrop-filter:blur(2px);
-  }
-  body.nav-open .nav-backdrop{display:block}
-  nav h2{font-size:12px;padding-right:48px}
-  .lesson-btn{min-height:46px;font-size:13px}
-
-  .main{width:100%;min-width:0}
-  .stage{
-    width:100%;padding:12px 9px calc(292px + env(safe-area-inset-bottom));
-    gap:10px;align-items:stretch;scroll-padding-bottom:294px;
-  }
-  body.run-finished .stage{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
-  .lesson-head{max-width:none}
-  .lesson-head .tag{font-size:10px;letter-spacing:1px}
-  .lesson-head h1{font-size:19px;line-height:1.45;margin-bottom:4px}
-  .lesson-head p{font-size:12.5px;line-height:1.65}
-  .hud{max-width:none;gap:5px}
-  .hud .box{min-width:0;padding:6px 3px;border-width:1px;border-radius:9px}
-  .hud .label{font-size:8px;letter-spacing:.5px}
-  .hud .val{font-size:17px}
-
-  .type-card{max-width:none;border-width:2px;border-radius:12px}
-  .type-card .bar{padding:7px 9px;gap:6px;flex-wrap:wrap}
-  .lights i{width:8px;height:8px}
-  .bar .fname{font-size:11px;min-width:0;overflow:hidden;text-overflow:ellipsis}
-  .mini-btn{min-height:34px;padding:5px 9px}
-  .bar .focus-hint{
-    order:4;width:100%;margin-left:0;padding-top:2px;text-align:center;
-    font-size:10.5px;color:var(--yellow);
-  }
-  .code-area{
-    font-size:clamp(14px,4vw,16px);line-height:1.9;letter-spacing:0;
-    padding:16px 12px;min-height:175px;
-    -webkit-overflow-scrolling:touch;
-  }
-  .type-card.finished{min-height:520px}
-  .result{padding:18px 12px calc(18px + env(safe-area-inset-bottom));gap:10px}
-  .rank-stamp{font-size:64px}
-  .result .r-msg{font-size:15px}
-  .result .r-stats{gap:7px 12px;font-size:11.5px;flex-wrap:wrap;justify-content:center}
-  .result .out-box{font-size:12px;max-height:125px}
-  .result .btns{width:100%;gap:8px;flex-wrap:wrap;justify-content:center}
-  button.game-btn{min-height:46px;padding:10px 14px;font-size:13px;touch-action:manipulation}
-
-  .cat{right:8px;bottom:calc(282px + env(safe-area-inset-bottom));gap:2px}
-  body.run-finished .cat{bottom:calc(10px + env(safe-area-inset-bottom))}
-  .cat .face{font-size:32px}
-  .cat .name{display:none}
-  .cat .bubble{max-width:170px;font-size:10.5px;padding:6px 8px}
-
-  .mobile-kbd{
-    display:flex;position:fixed;z-index:65;left:0;right:0;bottom:0;
-    flex-direction:column;gap:5px;
-    padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
-    background:rgba(13,13,31,.985);border-top:2px solid var(--cyan);
-    box-shadow:0 -8px 25px rgba(0,0,0,.42);
-  }
-
-  #titleScreen{
-    justify-content:flex-start;
-    padding:calc(28px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom));
-    gap:15px;
-  }
-  .title-logo{font-size:clamp(34px,12vw,50px)}
-  .title-sub{font-size:11px;letter-spacing:2px}
-  .title-cat{font-size:46px}
-  .title-steps{gap:7px;width:100%}
-  .t-step{min-width:0;max-width:none;padding:10px 8px}
-  .t-step .t-num{font-size:9px}
-  .t-step .t-icon{font-size:21px}
-  .t-step .t-txt{font-size:10.5px;line-height:1.5}
-  .title-start-btn{width:min(100%,360px);min-height:54px;padding:13px 20px;font-size:17px;touch-action:manipulation}
-
-  .intro-modal,.confirm-modal{padding:8px}
-  .intro-panel,.confirm-panel{
-    max-height:calc(var(--app-height,100dvh) - 16px);
-    border-width:2px;border-radius:14px;
-    padding:18px 15px calc(18px + env(safe-area-inset-bottom));
-  }
-  .intro-panel h2{font-size:20px}
-  .intro-panel p{font-size:13px;line-height:1.75}
-  .intro-panel pre{font-size:12px;padding:10px;line-height:1.65}
-  .intro-panel .flow li{font-size:11.5px;padding:7px 9px}
-}
-
-@media (max-width:430px){
-  .logo{font-size:14px}
-  .logo .coin{display:none}
-  .belt{padding:3px 5px}
-  .exp-track{width:46px}
-  #headerResetBtn{display:none}
-  .mobile-key-row{gap:3px}
-  .mobile-key{min-height:36px;font-size:14px;border-radius:7px}
-  .mobile-control-row{gap:4px}
-  .mobile-action-key{font-size:9px}
-}
-
-@media (max-width:960px) and (orientation:landscape){
-  .stage{padding-bottom:calc(216px + env(safe-area-inset-bottom));scroll-padding-bottom:218px}
-  .mobile-kbd{gap:3px;padding-top:3px}
-  .mobile-kbd-head{display:none}
-  .mobile-kbd-tabs{position:absolute;right:6px;top:4px;width:150px;z-index:2}
-  .mobile-kbd-tab{min-height:25px;font-size:9px}
-  .mobile-key-page{gap:3px;padding-right:158px}
-  .mobile-key-row{gap:3px}
-  .mobile-key{min-height:29px;font-size:12px;max-width:42px}
-  .mobile-control-row{position:absolute;right:6px;bottom:calc(6px + env(safe-area-inset-bottom));width:150px;grid-template-columns:1fr 1fr;gap:3px}
-  .mobile-action-key{min-height:30px;font-size:8px}
-  .cat{display:none}
-  .lesson-head p{display:none}
-}
-
 </style>
 </head>
 <body>
@@ -773,17 +609,14 @@ body.run-finished .mobile-kbd{display:none}
     </div>
   </div>
   <div class="hd-right">
-    <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" title="章一覧を開く" aria-label="章一覧を開く">☰</button>
     <button class="icon-btn" id="headerResetBtn" title="進捗をリセット">↺</button>
     <button class="icon-btn" id="soundBtn" title="効果音 ON/OFF">🔊</button>
     <div class="status"><span class="dot loading" id="statusDot"></span><span id="statusText">loading…</span></div>
   </div>
 </header>
 
-<div class="nav-backdrop" id="navBackdrop"></div>
-
 <div class="main">
-  <nav id="nav"><button class="nav-close" id="navCloseBtn" aria-label="章一覧を閉じる">×</button><h2>▼ お手本リスト</h2></nav>
+  <nav id="nav"><h2>▼ お手本リスト</h2></nav>
 
   <div class="stage">
     <div class="lesson-head" id="lessonHead"></div>
@@ -810,31 +643,26 @@ body.run-finished .mobile-kbd{display:none}
         <div class="r-msg" id="rankMsg"></div>
         <div class="r-stats" id="rStats"></div>
         <div class="clear-dots" id="clearDots"></div>
-        <div class="out-box"><div class="out-title">▶ このコードを実行した結果:</div><div id="runOut">…</div></div>
+        <div class="res-cols">
+          <div class="res-col out-col">
+            <div class="col-title">▶ 実行結果</div>
+            <div class="out-box"><div id="runOut">…</div></div>
+          </div>
+          <div class="res-col exp-col">
+            <div class="col-title">📖 コード解説</div>
+            <div class="explain-box" id="explainBox"></div>
+          </div>
+        </div>
         <div class="btns">
           <button class="game-btn sub" id="retryBtn">もう一回打つ</button>
           <button class="game-btn" id="nextBtn">次の章へ →</button>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div class="mobile-kbd" id="mobileKbd" aria-label="スマホ用Python画面キーボード">
-  <div class="mobile-kbd-head">
-    <strong>PYフルキーボード</strong><span>スマホの文字入力は使わず、下のキーだけで入力</span>
-  </div>
-  <div class="mobile-kbd-tabs" role="tablist" aria-label="キーの種類">
-    <button class="mobile-kbd-tab active" id="mobileLettersTab" type="button" data-page="letters">ABC・数字</button>
-    <button class="mobile-kbd-tab" id="mobileSymbolsTab" type="button" data-page="symbols">記号</button>
-  </div>
-  <div class="mobile-key-page active" id="mobileLetters" data-key-page="letters"></div>
-  <div class="mobile-key-page" id="mobileSymbols" data-key-page="symbols"></div>
-  <div class="mobile-control-row">
-    <button class="mobile-action-key" id="mobileShift" type="button" data-action="shift">⇧ SHIFT</button>
-    <button class="mobile-action-key" type="button" data-action="tab">TAB 字下げ</button>
-    <button class="mobile-action-key space" type="button" data-action="space">SPACE</button>
-    <button class="mobile-action-key" type="button" data-action="enter">ENTER ↵</button>
+    <div class="type-note">
+      <b>·</b>(黒丸)はスペースキーを入力してください。<b>⏎</b> はEnterキーです。行頭の連続した空白は <b>Tabキー</b>でまとめて入力できます。
+    </div>
   </div>
 </div>
 
@@ -872,7 +700,7 @@ body.run-finished .mobile-kbd{display:none}
   <div class="name">ニャン師匠</div>
 </div>
 
-<textarea id="hiddenInput" rows="1" inputmode="none" enterkeyhint="enter" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="パソコン用コード入力欄"></textarea>
+<input id="hiddenInput" autocomplete="off" autocapitalize="off" spellcheck="false">
 
 <script>
 /* ============================================================
@@ -887,7 +715,8 @@ print("Let's start!")`,
 `print("Good morning!")
 print("Time to code!")`,
 `print("Konnichiwa!")
-print("Python is fun!")`]},
+print("Python is fun!")`],
+ notes:[["画面に Hello, Python! と表示する。引用符は目印なので画面には出ない", "もう1行表示。print 1回につき1行ずつ出力される"], ["朝のあいさつを表示", "文中の ' はアポストロフィだが、外側が \" なのでそのまま書ける"], ["ローマ字の文字列もそのまま表示できる", "2行目を表示。print は書いた順に上から実行される"]]},
 
 {title:"変数に入れる",file:"02_variable",
  desc:'<code>=</code> は「代入」。値に名前をつけて、何度でも使い回せる。<code>+</code> で文字列をつなぐ形も頻出。',
@@ -900,7 +729,8 @@ print(hero)
 print("Go, " + hero + "!")`,
 `city = "Osaka"
 print(city)
-print("I love " + city)`]},
+print("I love " + city)`],
+ notes:[["name という箱に文字列 \"Tomo\" を入れる(この行は何も表示しない)", "箱の中身が取り出されて Tomo と表示", "\"Hi, \" と name の中身が連結されて Hi, Tomo と表示"], ["hero に \"Luna\" を代入", "中身をそのまま表示", "3つの文字列を + で連結 → Go, Luna!"], ["city に \"Osaka\" を代入", "中身を表示", "\"I love \" と連結 → I love Osaka"]]},
 
 {title:"計算させる",file:"03_calc",
  desc:'数値は引用符なしで書く。<code>*</code> が掛け算。変数どうしの計算はプログラミングの基本形。',
@@ -913,7 +743,8 @@ box = 6
 print(apples * box)`,
 `speed = 60
 hours = 3
-print(speed * hours)`]},
+print(speed * hours)`],
+ notes:[["単価を price に保存", "個数を count に保存", "150 * 7 が先に計算され、その結果 1050 が表示される"], ["1箱あたりの個数", "箱の数", "12 * 6 = 72 が表示される"], ["時速を保存", "時間を保存", "60 * 3 = 180(進む距離)が表示される"]]},
 
 {title:"割り算と余り",file:"04_operators",
  desc:'<code>//</code> は商、<code>%</code> は余り、<code>**</code> はべき乗。特に <code>%</code> は後のFizzBuzzで大活躍する。',
@@ -929,7 +760,8 @@ print(3 ** 4)`,
 `print(20 / 6)
 print(20 // 6)
 print(20 % 6)
-print(5 ** 3)`]},
+print(5 ** 3)`],
+ notes:[["/ は普通の割り算。答えは必ず小数になる(3.333…)", "// は商だけ。小数点以下を切り捨てて 3", "% は余りだけ。10÷3 の余りで 1", "** はべき乗。2を8回掛けて 256"], ["7÷2 = 3.5(小数)", "商だけなので 3", "余りは 1。「奇数なら1」の判定にも使える", "3の4乗 = 81"], ["20÷6 = 3.333…", "商は 3", "余りは 2", "5の3乗 = 125"]]},
 
 {title:"if で分岐",file:"05_if",
  desc:'Python最大の特徴、<strong>インデント(字下げ4スペース)</strong>を体に叩き込む回。行末の <code>:</code> も忘れずに。<br>💡 行頭の空白は <b>Tabキー</b>で一気に入力できるよ。',
@@ -948,7 +780,8 @@ else:
 if gold >= 100:
     print("Buy it!")
 else:
-    print("Not enough")`]},
+    print("Not enough")`],
+ notes:[["判定に使う点数を用意", "85 >= 80 は True なので、次の行が実行される", "True のときだけ実行される行(4スペース下げ)", "条件が False だったときの分かれ道", "今回は実行されずスキップされる行"], ["HPを用意", "30 <= 50 は True", "True なので Danger! が表示される", "False だったときの受け皿", "今回はスキップ"], ["所持金を用意", "120 >= 100 は True", "買えるので Buy it! を表示", "False のとき用", "今回はスキップ"]]},
 
 {title:"リスト",file:"06_list",
  desc:'複数の値をまとめる <code>[ ]</code>。番号は0から数える。<code>append</code> で追加、<code>len</code> で個数。',
@@ -964,7 +797,8 @@ print(len(cats))`,
 `nums = [10, 20, 30]
 print(nums[2])
 nums.append(40)
-print(len(nums))`]},
+print(len(nums))`],
+ notes:[["3つの文字列を持つリストを作る(番号は0,1,2)", "0番目=先頭の sushi を取り出して表示", "末尾に pizza を追加。リストは4個になる", "len が個数 4 を数えて返し、それを print が表示"], ["猫の名前3つのリスト", "1番目は「2番目の要素」なので Kuro", "Mike を末尾に追加", "要素数 4 を表示"], ["数値のリストも作れる", "2番目(最後)の 30 を表示", "40 を追加", "個数 4 を表示"]]},
 
 {title:"for でくり返す",file:"07_for",
  desc:'<code>range(1, 6)</code> は 1〜5(終わりは含まない!)。ループ+インデントの型を指で覚える。',
@@ -977,7 +811,8 @@ print("done!")`,
 print("finish!")`,
 `for i in range(0, 10, 2):
     print(i)
-print("end!")`]},
+print("end!")`],
+ notes:[["i に 1,2,3,4,5 を順に入れながらくり返す(6は含まない)", "毎周 i の中身を表示。5回実行される", "字下げなし=ループの外。最後に1回だけ実行"], ["3から7までくり返す(8は含まない)", "3,4,5,6,7 が順に表示される", "ループ終了後に1回だけ実行"], ["0から10手前まで2飛ばし(0,2,4,6,8)", "偶数だけが表示される", "ループ脱出後に実行"]]},
 
 {title:"積み上げ計算",file:"08_total",
  desc:'ループの超定番「積み上げ」。<code>+=</code> は足し込み、<code>*=</code> は掛け込み。実行結果がどうなるか予想してから打とう。',
@@ -993,7 +828,8 @@ print(total)`,
 `total = 1
 for i in range(1, 6):
     total *= i
-print(total)`]},
+print(total)`],
+ notes:[["合計を貯める箱を0で用意", "1から100まで順にくり返す", "毎周 total に i を足し込む(total = total + i の省略形)", "ループ終了後、貯まった合計 5050 を表示"], ["合計用の箱", "1から10までくり返す", "二乗した値を足し込む(1+4+9+…)", "結果 385 を表示"], ["掛け算なので1から始める(0だと全部0になる)", "1から5までくり返す", "掛け込み。1×2×3×4×5 の階乗計算", "結果 120 を表示"]]},
 
 {title:"関数を作る",file:"09_def",
  desc:'<code>def</code> で処理に名前をつけ、<code>return</code> で結果を返す。関数定義の後の空行まで含めて型として覚えよう。',
@@ -1009,7 +845,8 @@ print(add(30, 12))`,
 `def square(x):
     return x * x
 
-print(square(9))`]},
+print(square(9))`],
+ notes:[["triple という関数を定義(この時点ではまだ実行されない)", "受け取った x を3倍して呼び出し元に返す", "", "14 を渡して呼び出し。返ってきた 42 を print が表示"], ["2つの引数を受け取る関数を定義", "a + b の結果を返す", "", "30 と 12 を渡して 42 が返り、表示される"], ["square 関数を定義", "x を2回掛けた値を返す", "", "9 を渡して 81 が返り、表示される"]]},
 
 {title:"辞書",file:"10_dict",
  desc:'<code>{"キー": 値}</code> のペアでデータを持つ。ゲームのステータス管理そのもの。<code>+=</code> <code>-=</code> で値を更新!',
@@ -1025,7 +862,8 @@ print(item["price"])`,
 `cat = {"name": "Momo", "age": 3}
 print(cat["name"])
 cat["age"] += 1
-print(cat["age"])`]},
+print(cat["age"])`],
+ notes:[["name と level をキーに持つ辞書を作る", "キー \"name\" で引き出して Hero を表示", "現在値5を取り出し+1して同じキーに戻す(レベルアップ)", "更新後の 6 を表示"], ["アイテムの情報を辞書で持つ", "商品名 Potion を表示", "値引き処理。50から10引いて40に更新", "値引き後の 40 を表示"], ["猫のデータを辞書で持つ", "名前 Momo を表示", "誕生日で年齢+1", "更新後の 4 を表示"]]},
 
 {title:"while ループ",file:"11_while",
  desc:'条件が成り立つ間くり返す <code>while</code>。カウンタの更新(<code>-= 1</code> など)を忘れると無限ループになるので要注意。',
@@ -1044,7 +882,8 @@ print("stop")`,
 while fuel > 0:
     print("Fly!")
     fuel -= 1
-print("Landed")`]},
+print("Landed")`],
+ notes:[["HPを5で初期化", "hp が0より大きい間くり返す(毎周ここで判定)", "カンマ区切りで文字と数値を並べて表示", "★HPを1減らす。これがないと永遠に終わらない", "条件がFalseになりループ脱出後に実行"], ["カウンタを1から開始", "n が5以下の間くり返す", "10倍した値を表示(10,20,30,40,50)", "★カウンタを増やす。忘れると無限ループ", "ループ終了後に実行"], ["燃料を3で初期化", "燃料がある間くり返す", "飛行中の表示", "★燃料を1消費", "燃料切れで着陸"]]},
 
 {title:"卒業試験 FizzBuzz",file:"12_fizzbuzz",
  desc:'プログラミングの登竜門。<code>if / elif / else</code> の判定順がキモ(最初に最も厳しい条件を!)。3パターン打てたら入門卒業だ。',
@@ -1073,7 +912,8 @@ print("Landed")`]},
     elif i % 2 == 0:
         print("even")
     else:
-        print(i)`]},
+        print(i)`],
+ notes:[["1から15までくり返す", "★最初に一番厳しい条件(15の倍数)を判定", "15の倍数のときだけ FizzBuzz", "上がFalseなら3の倍数か判定", "3の倍数なら Fizz", "次に5の倍数か判定", "5の倍数なら Buzz", "どれにも当てはまらない場合", "数字をそのまま表示"], ["1から15までくり返す", "15の倍数を最優先で判定", "ネコとイヌの合体版", "3の倍数か判定", "3の倍数なら Neko", "5の倍数か判定", "5の倍数なら Inu", "どれでもない場合", "数字をそのまま表示"], ["1から15までくり返す", "6の倍数(2と3の公倍数)を先に判定", "6の倍数なら Boom!", "6の倍数でない偶数か判定", "偶数なら even", "奇数の場合", "数字をそのまま表示"]]},
 ];
 
 /* ============================================================
@@ -1393,7 +1233,6 @@ function buildNav(){
         return;
       }
       loadLesson(i);
-      closeMobileNav();
     };
     $("nav").appendChild(b);
   });
@@ -1475,23 +1314,15 @@ function loadLesson(i){
   }
   resetRun();
   refreshNav();
-  // 新しい章は先に解説を表示。スマホでキーボードが勝手に開くのを防ぐ
+  focusInput();
+  // 新しい章に入ったら解説を表示(同じ章のパターン切替では出さない)
   if(cur!==lastIntroLesson){
     lastIntroLesson=cur;
     showIntro();
-  }else{
-    focusInput();
   }
 }
 
-function mobileHint(idle=true){
-  return window.matchMedia("(max-width:960px)").matches
-    ?(idle?"下の画面キーだけで入力スタート!":"画面キーで写経中… 📱")
-    :(idle?"キーを打つと開始!(半角英数モードで)":"写経中… ⌨");
-}
-
 function resetRun(){
-  document.body.classList.remove("run-finished");
   pos=0;miss=0;combo=0;maxCombo=0;correct=0;
   started=false;finished=false;
   clearInterval(timer);
@@ -1505,7 +1336,7 @@ function resetRun(){
   $("typeProg").style.width="0";
   $("result").classList.remove("show");
   $("typeCard").classList.remove("finished");
-  $("focusHint").textContent=mobileHint(true);
+  $("focusHint").textContent="キーを打つと開始!(半角英数モードで)";
 }
 
 function setCursor(p){
@@ -1514,7 +1345,6 @@ function setCursor(p){
     chars[p].classList.add("cur");
     chars[p].scrollIntoView({block:"nearest",inline:"nearest"});
   }
-  syncMobileKeyboardToExpected();
 }
 
 /* ============================================================
@@ -1523,7 +1353,6 @@ function setCursor(p){
 let introOpen=false, lastIntroLesson=-1, pauseAt=0;
 
 function showIntro(){
-  $("hiddenInput").blur();
   const l=LESSONS[cur];
   $("iTag").textContent=`お手本 ${String(cur+1).padStart(2,"0")} の解説`;
   $("iTitle").textContent=l.title;
@@ -1552,49 +1381,15 @@ document.addEventListener("keydown",e=>{
   if(introOpen&&(e.key==="Enter"||e.key==="Escape")){e.preventDefault();closeIntro();}
 });
 
-function focusInput(){
-  const input=$("hiddenInput");
-  // スマホではOS標準キーボードを開かず、画面内キーだけを使う
-  if(window.matchMedia("(max-width:960px)").matches){input.blur();return;}
-  try{input.focus({preventScroll:true});}catch(e){input.focus();}
-}
+function focusInput(){$("hiddenInput").focus({preventScroll:true});}
 document.addEventListener("click",e=>{
-  if(!window.matchMedia("(max-width:960px)").matches&&
-     (e.target.closest(".type-card")||e.target.closest(".stage")))focusInput();
+  if(e.target.closest(".type-card")||e.target.closest(".stage"))focusInput();
 });
-
-/* スマホの章一覧 */
-function openMobileNav(){
-  $("hiddenInput").blur();
-  document.body.classList.add("nav-open");
-}
-function closeMobileNav(){document.body.classList.remove("nav-open");}
-$("mobileMenuBtn").addEventListener("click",e=>{e.stopPropagation();openMobileNav();});
-$("navCloseBtn").addEventListener("click",closeMobileNav);
-$("navBackdrop").addEventListener("click",closeMobileNav);
-
-/* 画面キーボード表示中も高さを正しく合わせる */
-let viewportMax=window.visualViewport?window.visualViewport.height:window.innerHeight;
-let viewportWidth=window.innerWidth;
-function syncViewportHeight(){
-  const h=window.visualViewport?window.visualViewport.height:window.innerHeight;
-  if(Math.abs(window.innerWidth-viewportWidth)>50){viewportWidth=window.innerWidth;viewportMax=h;}
-  viewportMax=Math.max(viewportMax,h);
-  document.documentElement.style.setProperty("--app-height",`${Math.round(h)}px`);
-  document.body.classList.remove("keyboard-visible");
-}
-syncViewportHeight();
-window.addEventListener("resize",syncViewportHeight,{passive:true});
-if(window.visualViewport){
-  window.visualViewport.addEventListener("resize",syncViewportHeight,{passive:true});
-  window.visualViewport.addEventListener("scroll",syncViewportHeight,{passive:true});
-}
-
 
 function startIfNeeded(){
   if(started||finished)return;
   started=true;startT=performance.now();
-  $("focusHint").textContent=mobileHint(false);
+  $("focusHint").textContent="写経中… ⌨";
   timer=setInterval(()=>{
     $("timeVal").textContent=((performance.now()-startT)/1000).toFixed(1);
   },100);
@@ -1653,25 +1448,10 @@ function handleTab(){
 }
 
 const hidden=$("hiddenInput");
-let beforeInputHandled=false;
-function feedInputText(text){
-  if(!text)return;
-  for(const ch of text.replace(/\r\n?/g,"\n"))handleChar(ch);
-}
 hidden.addEventListener("beforeinput",e=>{
-  if(e.inputType==="insertLineBreak"){
-    e.preventDefault();beforeInputHandled=true;handleChar("\n");
-    setTimeout(()=>beforeInputHandled=false,0);return;
-  }
-  if(e.inputType&&e.inputType.startsWith("insert")&&e.data){
-    e.preventDefault();beforeInputHandled=true;feedInputText(e.data);
-    setTimeout(()=>beforeInputHandled=false,0);
-  }
-});
-/* Android/iOSでbeforeinputが取れない場合のフォールバック */
-hidden.addEventListener("input",()=>{
-  const value=hidden.value;hidden.value="";
-  if(!beforeInputHandled&&value)feedInputText(value);
+  e.preventDefault();
+  if(e.inputType==="insertLineBreak"){handleChar("\n");return;}
+  if(e.data)for(const ch of e.data)handleChar(ch);
 });
 hidden.addEventListener("keydown",e=>{
   if(introOpen){
@@ -1679,130 +1459,19 @@ hidden.addEventListener("keydown",e=>{
     return;
   }
   if(e.isComposing||e.key==="Process"){
-    catSay("日本語入力を英字入力に切り替えるにゃ!","🙀");
+    catSay("日本語入力(IME)をオフ、半角英数にするにゃ!","🙀");
     return;
   }
   if(e.key==="Tab"){e.preventDefault();handleTab();}
   else if(e.key==="Enter"){e.preventDefault();handleChar("\n");}
   else if(e.key==="Escape"){resetRun();}
 });
-hidden.addEventListener("compositionstart",()=>{
-  catSay("日本語入力を英字入力に切り替えるにゃ!","🙀");
-});
 hidden.addEventListener("blur",()=>{
-  if(!finished)$("focusHint").textContent=window.matchMedia("(max-width:960px)").matches?"下の画面キーで入力":"クリックして再開";
+  if(!finished)$("focusHint").textContent="クリックして再開";
 });
 hidden.addEventListener("focus",()=>{
-  hidden.value="";
-  if(!finished&&!started)$("focusHint").textContent=mobileHint(true);
-  else if(!finished)$("focusHint").textContent=mobileHint(false);
-});
-
-/* スマホ用フル画面キーボード */
-const MOBILE_LETTER_ROWS=[
-  ["1","2","3","4","5","6","7","8","9","0"],
-  ["q","w","e","r","t","y","u","i","o","p"],
-  ["a","s","d","f","g","h","j","k","l"],
-  ["z","x","c","v","b","n","m"]
-];
-const MOBILE_SYMBOL_ROWS=[
-  ['"',"'",":","=","_","(",")","[","]",","],
-  [".","+","-","*","/","%","<",">","!","#"],
-  ["{","}","@","&","|","\\","?",";","$","^"]
-];
-let mobileShift=false;
-let mobileKeyPage="letters";
-
-function makeMobileKey(value,isLetter=false){
-  const btn=document.createElement("button");
-  btn.type="button";
-  btn.className="mobile-key";
-  btn.dataset.value=value;
-  if(isLetter)btn.dataset.letter=value;
-  btn.textContent=isLetter&&mobileShift?value.toUpperCase():value;
-  btn.setAttribute("aria-label",value===" "?"スペース":value);
-  return btn;
-}
-function fillMobilePage(id,rows,letters=false){
-  const page=$(id);page.innerHTML="";
-  rows.forEach(row=>{
-    const line=document.createElement("div");line.className="mobile-key-row";
-    row.forEach(value=>line.appendChild(makeMobileKey(value,letters&&/^[a-z]$/.test(value))));
-    page.appendChild(line);
-  });
-}
-function renderMobileKeyboard(){
-  fillMobilePage("mobileLetters",MOBILE_LETTER_ROWS,true);
-  fillMobilePage("mobileSymbols",MOBILE_SYMBOL_ROWS,false);
-  $("mobileShift").classList.toggle("shift-on",mobileShift);
-  $("mobileShift").textContent=mobileShift?"⇧ 大文字 ON":"⇧ SHIFT";
-  highlightExpectedMobileKey();
-}
-function setMobileKeyPage(page){
-  mobileKeyPage=page;
-  document.querySelectorAll("[data-key-page]").forEach(el=>el.classList.toggle("active",el.dataset.keyPage===page));
-  document.querySelectorAll(".mobile-kbd-tab").forEach(el=>el.classList.toggle("active",el.dataset.page===page));
-}
-function expectedMobileValue(){
-  if(finished||!curCode||pos>=curCode.length)return null;
-  return curCode[pos];
-}
-function highlightExpectedMobileKey(){
-  document.querySelectorAll("#mobileKbd .expected-key").forEach(el=>el.classList.remove("expected-key"));
-  const expect=expectedMobileValue();
-  if(expect===null)return;
-  if(expect==="\n"){
-    document.querySelector('[data-action="enter"]')?.classList.add("expected-key");return;
-  }
-  if(expect===" "){
-    let run=0;while(curCode[pos+run]===" ")run++;
-    const action=run>1?"tab":"space";
-    document.querySelector(`[data-action="${action}"]`)?.classList.add("expected-key");return;
-  }
-  document.querySelectorAll("#mobileKbd [data-value]").forEach(btn=>{
-    const base=btn.dataset.letter||btn.dataset.value;
-    const output=btn.dataset.letter?(mobileShift?base.toUpperCase():base):base;
-    if(output===expect)btn.classList.add("expected-key");
-  });
-}
-function syncMobileKeyboardToExpected(){
-  if(!window.matchMedia("(max-width:960px)").matches)return;
-  const expect=expectedMobileValue();
-  if(expect===null){highlightExpectedMobileKey();return;}
-  if(/[A-Za-z0-9]/.test(expect)){
-    mobileShift=/[A-Z]/.test(expect);
-    setMobileKeyPage("letters");
-    renderMobileKeyboard();
-  }else if(expect!==" "&&expect!=="\n"){
-    mobileShift=false;
-    setMobileKeyPage("symbols");
-    renderMobileKeyboard();
-  }else{
-    highlightExpectedMobileKey();
-  }
-}
-
-renderMobileKeyboard();
-setMobileKeyPage("letters");
-$("mobileKbd").addEventListener("pointerdown",e=>{
-  const btn=e.target.closest("button");
-  if(!btn)return;
-  e.preventDefault();
-  if(btn.dataset.page){setMobileKeyPage(btn.dataset.page);highlightExpectedMobileKey();return;}
-  const action=btn.dataset.action;
-  if(action==="shift"){
-    mobileShift=!mobileShift;renderMobileKeyboard();return;
-  }
-  if(action==="tab"){handleTab();return;}
-  if(action==="space"){handleChar(" ");return;}
-  if(action==="enter"){handleChar("\n");return;}
-  if(btn.dataset.value!==undefined){
-    const base=btn.dataset.letter||btn.dataset.value;
-    const value=btn.dataset.letter?(mobileShift?base.toUpperCase():base):base;
-    if(btn.dataset.letter&&mobileShift)mobileShift=false;
-    handleChar(value);
-    renderMobileKeyboard();
-  }
+  if(!finished&&!started)$("focusHint").textContent="キーを打つと開始!(半角英数モードで)";
+  else if(!finished)$("focusHint").textContent="写経中… ⌨";
 });
 
 /* ============================================================
@@ -1823,8 +1492,6 @@ const RANK_STYLE={
 };
 
 async function finish(){
-  $("hiddenInput").blur();
-  document.body.classList.add("run-finished");
   finished=true;
   clearInterval(timer);
   const t=((performance.now()-startT)/1000);
@@ -1867,6 +1534,9 @@ async function finish(){
     (clears[cur]>=NEED
       ?`<span style="color:var(--green)">クリア!${cur<LESSONS.length-1?" 次の章が解放中":""}</span>`
       :`<span>あと <b style="color:var(--yellow)">${remain}</b> 回で次の章が解放</span>`);
+  // 行別のコード解説を組み立て
+  buildExplain();
+  switchResTab("out");
   $("typeCard").classList.add("finished");
   $("result").classList.add("show");
   $("result").scrollTop=0;
@@ -1930,6 +1600,26 @@ function sparkle(n){
   }
 }
 
+/* ============================================================
+   結果画面: 行別コード解説 / タブ切替
+============================================================ */
+function buildExplain(){
+  const lines=curCode.split("\n");
+  const notes=(LESSONS[cur].notes||[])[curVar]||[];
+  let html="";
+  lines.forEach((ln,i)=>{
+    const note=notes[i]||"";
+    const disp=ln===""?"&nbsp;":ln.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    html+=`<div class="ex-row">
+      <div class="ex-ln">${i+1}</div>
+      <div class="ex-code">${disp}</div>
+      <div class="ex-note">${note?note.replace(/★/g,"<b>★</b>"):"—"}</div>
+    </div>`;
+  });
+  $("explainBox").innerHTML=html;
+}
+function switchResTab(){/* タブ廃止: 実行結果と解説を常時同時表示 */}
+
 $("retryBtn").onclick=()=>{
   loadLesson(cur); // クリア回数が増えているので次のパターンが出る
   catSay("同じ内容、別のコードだにゃ。新鮮な気持ちで!","😺");
@@ -1946,7 +1636,6 @@ $("soundBtn").textContent=soundOn?"🔊":"🔇";
    進捗リセット(確認ダイアログ付き)
 ============================================================ */
 function openResetConfirm(){
-  $("hiddenInput").blur();
   $("confirmModal").classList.add("show");
   tone(196,.12,"triangle",.07);
 }
@@ -1976,9 +1665,7 @@ $("confirmYesBtn").onclick=doReset;
 $("confirmModal").addEventListener("click",e=>{if(e.target===$("confirmModal"))closeResetConfirm();});
 document.addEventListener("keydown",e=>{
   if($("confirmModal").classList.contains("show")&&e.key==="Escape")closeResetConfirm();
-  if(e.key==="Escape")closeMobileNav();
 });
-window.addEventListener("resize",()=>{if(window.innerWidth>960)closeMobileNav();},{passive:true});
 
 /* ============================================================
    起動(タイトル画面 → スタートで章へ)
